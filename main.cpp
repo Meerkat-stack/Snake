@@ -1,5 +1,5 @@
 #include <iostream>
-#include "includes/make_button.h"
+#include "includes/button.h"
 #include <SFML/Graphics.hpp>
 
 #define Basil_color 0x1A471BFF //Że w sęsie ciemny zielony

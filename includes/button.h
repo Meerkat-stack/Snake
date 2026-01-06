@@ -34,6 +34,7 @@ int button_action(
 // Animacja guzika
 void button_animation(
     sf::RectangleShape &button,//animowany guzik 
+    sf::Text &text,//animowana etykieta guzika
     sf::RenderWindow &window//oko w którym akcja się rozgrywa
 );
 

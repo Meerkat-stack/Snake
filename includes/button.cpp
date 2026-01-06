@@ -45,11 +45,18 @@ int button_action(const sf::RectangleShape &button, const sf::Event &ev, sf::Ren
 }
 
 //animacja guzika
-void button_animation(sf::RectangleShape &button, sf::RenderWindow &window)
+//bez inline kompilator się gubi, ale czm
+inline void button_animation(sf::RectangleShape &button, sf::Text &text, sf::RenderWindow &window)
 {
     sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos);
     bool hovered = button.getGlobalBounds().contains(worldPos);
-    if(hovered) button.setScale({1.15f, 1.15f});
-    else button.setScale({1.0f, 1.0f});
+    if(hovered){ 
+        button.setScale({1.15f, 1.15f});
+        text.setScale({1.15f, 1.15f});
+    }
+    else{ 
+        button.setScale({1.0f, 1.0f});
+        text.setScale({1.0f, 1.0f});
+    }
 }

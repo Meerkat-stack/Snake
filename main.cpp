@@ -64,14 +64,27 @@ int main()
                     window->close();
                 }
             }
+            //Sprawdza kliknięcie guzików
+            for(int i=0;i<max_num_of_buttons;i++){
+                if(button_action(buttons[i],*event,*window)){
+                    if(i==0) std::cout<<"Sign in"<<std::endl;
+                    if(i==1) std::cout<<"Sign up"<<std::endl;
+                    if(i==2) std::cout<<"Guest"<<std::endl;
+                }
+            }
             
         }
+        //Animacja guzików
+        for(int i=0;i<max_num_of_buttons;i++){
+            button_animation(buttons[i],buttons_labels[i],*window);
+        }
+
 
         //Renderowanie
         window->clear(sf::Color(Piemontite_color));//Kolor okna, nie rozumiem do końca systemu zapisu kolorów
-        for(int i=0;i<3;i++){window->draw(buttons[i]);}//wyświetla przyciski logowania
-        for(int i=0;i<3;i++){window->draw(buttons_labels[i]);}//wyświetla etykiety przycisków logowania
 
+        for(int i=0;i<max_num_of_buttons;i++){window->draw(buttons[i]);}//wyświetla przyciski logowania
+        for(int i=0;i<max_num_of_buttons;i++){window->draw(buttons_labels[i]);}//wyświetla etykiety przycisków logowania
         window->draw(border);
 
         window->display();

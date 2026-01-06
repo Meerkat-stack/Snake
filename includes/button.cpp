@@ -1,13 +1,14 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
+//Tworzy przycisk, czytaj taki prostokąt
 sf::RectangleShape build_button(float a, float b, float x, float y, unsigned int button_color, unsigned int border_color){
     sf::RectangleShape button({a,b});
     button.setOrigin(button.getSize()/2.0f);
     button.setPosition({x,y});
     button.setFillColor(sf::Color(button_color));
     button.setOutlineColor(sf::Color(border_color));
-    button.setOutlineThickness(-a*0.01);//-a*0.01
+    button.setOutlineThickness(-a*0.02);//-a*0.01
 
     return button;
 }
@@ -31,7 +32,7 @@ sf::Text label(int size, float x, float y, std::string label_text,unsigned int c
     return text;
 }
 
-//akcja guzika, zwraca 1 gdzy kliknięty
+//akcja guzika, zwraca 1 gdy kliknięty
 int button_action(const sf::RectangleShape &button, const sf::Event &ev, sf::RenderWindow &window){
     if(ev.is<sf::Event::MouseButtonPressed>()){
         const auto* mousePress = ev.getIf<sf::Event::MouseButtonPressed>();
@@ -45,7 +46,7 @@ int button_action(const sf::RectangleShape &button, const sf::Event &ev, sf::Ren
 }
 
 //animacja guzika
-//bez inline kompilator się gubi, ale czm
+//bez inline kompilator się gubi, ale czm?
 inline void button_animation(sf::RectangleShape &button, sf::Text &text, sf::RenderWindow &window)
 {
     sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
@@ -60,3 +61,16 @@ inline void button_animation(sf::RectangleShape &button, sf::Text &text, sf::Ren
         text.setScale({1.0f, 1.0f});
     }
 }
+
+//Tworzy przysciski na starcie
+inline void build_start_bttons(unsigned int width, unsigned int height, unsigned int button_color, unsigned int text_color,sf::RectangleShape* buttons,sf::Text* buttons_labels, sf::Font& font){
+    buttons[0] = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f-0.09f*height,button_color,text_color);//sign in
+    buttons[1] = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f,button_color,text_color);//sign up
+    buttons[2] = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f+0.09f*height,button_color,text_color);//guest
+
+    buttons_labels[0] = label(0.035f*height,width/2.0f,height/2.0f-0.09f*height,"Sign in",text_color,font);
+    buttons_labels[1] = label(0.035f*height,width/2.0f,height/2.0f,"Sign up",text_color,font);
+    buttons_labels[2] = label(0.035f*height,width/2.0f,height/2.0f+0.09f*height,"Guest",text_color,font);
+    
+}
+

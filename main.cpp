@@ -1,5 +1,8 @@
 #include <iostream>
 #include "includes/button.h"
+#include "includes/window_look.h"
+#include "includes/user.h"
+
 #include <SFML/Graphics.hpp>
 
 #define Basil_color 0x1A471BFF //Że w sęsie ciemny zielony
@@ -17,31 +20,62 @@ int main()
     unsigned int width = 740;
     unsigned int height = 740;
 
+    int state = 0;//Zmienna odpowiedzialna za wybór otwieranej strony
+    /*
+    0 - Przyciski na starcie, wybór logowania
+    1 - Sign in
+    2 - Sign up
+    3 - Guess
+    4 - Game menu
+    */
+
+
     //Torzy okno
     sf::RenderWindow * window = new sf::RenderWindow(sf::VideoMode({width,height}),"Irrationa Snake");
 
-    //Tworzy ramkę wokoło okna
-    sf::RectangleShape border({(float)width,(float)height});
-    border.setFillColor(sf::Color::Transparent);//Wnętrze przezroczyste
-    border.setOutlineColor(sf::Color(Dark_color));
-    border.setOutlineThickness(-(float)width*0.009);//Grubość ramki//-(float)width*0.008
-
     window->setFramerateLimit(60);//Ustawia klatkarz
+
+    //Ustawia ramkę wokoło ekranu
+    sf::RectangleShape border({(float)width,(float)height});
+    border = build_border(width,height,Dark_color);
 
     sf::Font font("fonts/BebasNeue-Regular.ttf");//ładuje czcionkę
 
+    //Naprawia rozpikselizowany tekst
+    const_cast<sf::Texture&>(font.getTexture((int)(0.5f*0.037f*height+3))).setSmooth(false);//Lepsza jakość tekstu
+    const_cast<sf::Texture&>(font.getTexture(0.035f*height)).setSmooth(false);//Lepsza jakość tekstu
+
     //Tworzy przyciski na ekranie startowym
     sf::RectangleShape buttons[max_num_of_buttons];//Tablica przechowująca przyciski
-    buttons[0] = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f-0.09f*height,Apatite_color,Dark_color);//sign in
-    buttons[1] = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f,Apatite_color,Dark_color);//sign up
-    buttons[2] = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f+0.09f*height,Apatite_color,Dark_color);//guest
+    sf::Text buttons_labels[max_num_of_buttons]={sf::Text(font),sf::Text(font),sf::Text(font)};//Tablica przechowująca tekst
 
-    //Dodaje etykiety na przyciskach        
-    sf::Text buttons_labels[max_num_of_buttons]={sf::Text(font),sf::Text(font),sf::Text(font)};//Tablica przechowująca przyciski
-    buttons_labels[0] = label(0.035f*height,width/2.0f,height/2.0f-0.09f*height,"Sign in",Dark_color,font);
-    buttons_labels[1] = label(0.035f*height,width/2.0f,height/2.0f,"Sign up",Dark_color,font);
-    buttons_labels[2] = label(0.035f*height,width/2.0f,height/2.0f+0.09f*height,"Guest",Dark_color,font);
-    
+    build_start_bttons(width,height,Apatite_color,Dark_color,buttons,buttons_labels,font);
+
+    //state = 1 | Sign in
+    sf::RectangleShape text_frames[4];//Tablica przechowująca przyciski
+    sf::Text labels_log[2]={sf::Text(font),sf::Text(font)};//Przechowuje napisy przy polach do logowania
+    sf::RectangleShape login_button({0.12f*width,0.05f*height});//Przycisk logowania
+    sf::Text login_button_label(font, "Log in", 0.035f*height);//Etykieta przycisku logowania
+
+
+    //Pola i ramki
+    text_frames[0] = text_frame_bg(0.24f*width+10,0.04f*height+20,width/2.0f-5,height/2.0f+0.06f*height-10,Apatite_color,Dark_color);
+    text_frames[1] = text_frame_bg(0.24f*width+10,0.04f*height+20,width/2.0f-5,height/2.0f-0.06f*height-10,Apatite_color,Dark_color);
+    text_frames[2] = text_frame(0.24f*width,0.04f*height,width/2.0f,height/2.0f-0.06f*height,Dark_color);
+    text_frames[3] = text_frame(0.24f*width,0.04f*height,width/2.0f,height/2.0f+0.06f*height,Dark_color);
+
+    //Opis ramek
+    labels_log[0] = label((int)(0.5f*0.037f*height+3),(int)( width/2.0f-0.1f*width),(int)(height/2.0f-0.06f*height-0.029f*height), "Login",Dark_color,font);
+    labels_log[1] = label((int)(0.5f*0.037f*height+3), (int)(width/2.0f-0.1f*width+10),(int)(height/2.0f+0.06f*height-0.029f*height), "Password",Dark_color,font);
+
+    //Przycisk
+    login_button = build_button(0.12f*width,0.05f*height,width/2.0f,height/2.0f+0.155f*height,Apatite_color,Dark_color);
+
+    login_button_label = label(0.035f*height, width/2.0f,height/2.0f+0.155f*height, "Log in",Dark_color,font);
+
+
+
+
 
 
 
@@ -65,27 +99,56 @@ int main()
                 }
             }
             //Sprawdza kliknięcie guzików
-            for(int i=0;i<max_num_of_buttons;i++){
-                if(button_action(buttons[i],*event,*window)){
-                    if(i==0) std::cout<<"Sign in"<<std::endl;
-                    if(i==1) std::cout<<"Sign up"<<std::endl;
-                    if(i==2) std::cout<<"Guest"<<std::endl;
+            else if(state==0){
+                for(int i=0;i<max_num_of_buttons;i++){
+                    if(button_action(buttons[i],*event,*window)){
+                        if(i==0) state = 1;//Sign in
+                        if(i==1) state = 2;//Sign up
+                        if(i==2) state = 3;//Guess
+                    }
                 }
             }
-            
+            else if(state==1){
+                if(button_action(login_button,*event,*window)){
+                    std::cout<<"LOG ON!!!" << std::endl;
+                }
+            }
         }
         //Animacja guzików
-        for(int i=0;i<max_num_of_buttons;i++){
-            button_animation(buttons[i],buttons_labels[i],*window);
+        if(state == 0){
+            for(int i=0;i<max_num_of_buttons;i++){
+                button_animation(buttons[i],buttons_labels[i],*window);
+            }
         }
-
+        else if(state==1){
+            button_animation(login_button,login_button_label,*window);
+        }
+        
 
         //Renderowanie
         window->clear(sf::Color(Piemontite_color));//Kolor okna, nie rozumiem do końca systemu zapisu kolorów
 
-        for(int i=0;i<max_num_of_buttons;i++){window->draw(buttons[i]);}//wyświetla przyciski logowania
-        for(int i=0;i<max_num_of_buttons;i++){window->draw(buttons_labels[i]);}//wyświetla etykiety przycisków logowania
-        window->draw(border);
+        switch (state){
+        case 0://Start buttons
+            for(int i=0;i<3;i++){window->draw(buttons[i]);}//wyświetla przyciski logowania
+            for(int i=0;i<3;i++){window->draw(buttons_labels[i]);}//wyświetla etykiety przycisków logowania
+            break;
+        case 1://Sign in side
+            for(int i=0;i<4;i++){window->draw(text_frames[i]);}//wyświetla przyciski logowania
+            for(int i=0;i<2;i++){window->draw(labels_log[i]);}//Wyświetla opisy pól
+            window->draw(login_button);
+            window->draw(login_button_label);
+
+            break;
+        case 2:
+
+            break;
+        case 3: case 4:
+
+            break;
+        }
+
+            window->draw(border);//wyświetla ramkę
 
         window->display();
     }

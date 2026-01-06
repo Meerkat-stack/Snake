@@ -1,7 +1,7 @@
 #ifndef BUTTON_H//pilnuje aby nie includować wielokrotnie tego pliku
 #define BUTTON_H
-#include "button.cpp"
 #include <SFML/Graphics.hpp>
+#include "button.cpp"
 
 //Funkcja tworząca przycisk
 sf::RectangleShape build_button(
@@ -32,11 +32,22 @@ int button_action(
 );
 
 // Animacja guzika
-void button_animation(
+inline void button_animation(
     sf::RectangleShape &button,//animowany guzik 
     sf::Text &text,//animowana etykieta guzika
     sf::RenderWindow &window//oko w którym akcja się rozgrywa
 );
+
+inline void build_start_bttons(
+    unsigned int width,//Szerokość ekranu
+    unsigned int height,//Wysokość ekranu
+     unsigned int button_color,//Kolor przycisku
+     unsigned int text_color,//Kolor tekstu
+     sf::RectangleShape* buttons,//Tablica z przyciskami starowymi
+     sf::Text* buttons_labels,//Tablica z napisami do nich
+     sf::Font& font//Czcionka
+);
+
 
 
 

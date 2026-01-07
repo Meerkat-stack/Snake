@@ -124,7 +124,7 @@ int main()
             }
             else if(state==1){
                 if(button_action(login_button,*event,*window)){
-                    std::cout<<"LOG IN!!!   " << std::endl;
+                    std::cout<<"Wypierdalaj!" << std::endl;
                     std::cout<<active_field;
                 }
                 if(button_action(back_button,*event,*window)){

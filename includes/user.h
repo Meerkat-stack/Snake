@@ -22,5 +22,15 @@ sf::RectangleShape text_frame_bg(
     unsigned int border_color//Kolor ramki ramki
 );
 
+//Przyjmuje tekst z klawiatury i przypisuje go do zmiennej aby go potem wyświetlić
+void input_text(
+    std::string& target_string,//Zmienna przechowująca napis 
+    const sf::Event &ev,//Zdarzenie
+    int limit,//Maksymalna liczba znaków
+    int active_field,//Które pole jest aktywne, bo jak hasła to nie wyświetlaj hasła
+    int char_count//Zlicza znaki aby przesuwać kursor
+);
+
+
 
 #endif

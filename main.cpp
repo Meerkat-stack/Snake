@@ -84,6 +84,26 @@ int main()
     sf::RectangleShape cursor({2.0f,29.0f});
     cursor.setFillColor(sf::Color(Dark_color));
     cursor.setOrigin(cursor.getGeometricCenter());
+    int char_count[3];//Zlicza znaki aby przesuwać kursor
+
+    //Wpisywanie danych do logowania
+    std::string login_input = "";
+    std::string password_input = "";
+
+    //Tekst do wyświetlenia
+    //Login
+    sf::Text login_input_text(font, login_input, 0.035f*height);//Ustawia dla napisu, czcionkę, tekst, rozmiar
+    login_input_text.setFillColor(sf::Color(Dark_color));
+    sf::FloatRect bounds = login_input_text.getLocalBounds();
+    login_input_text.setOrigin({bounds.position.x, 0.f});//Wyrównuje do lewej
+    login_input_text.setPosition({width/2.0f-83,height/2.0f-0.06f*height-16});
+    //Password
+    sf::Text password_input_text(font, password_input, 0.035f*height);//Ustawia dla napisu, czcionkę, tekst, rozmiar
+    password_input_text.setFillColor(sf::Color(Dark_color));
+    sf::FloatRect bounds2 = password_input_text.getLocalBounds();
+    password_input_text.setOrigin({bounds.position.x, 0.f});//Wyrównuje do lewej
+    password_input_text.setPosition({width/2.0f-83,height/2.0f+0.06f*height-12});
+
 
 
 
@@ -104,37 +124,87 @@ int main()
                 window->close();//Bez tego krzyżyk nie działa
             }
 
-            //Ustawia klawisz esc jako wyjście
+            //Sprawdza klawisze z klawiatury
             else if(const auto* keyPress = event->getIf<sf::Event::KeyPressed>()){
-
+                //Ustawia klawisz esc jako wyjście
                 if(keyPress->scancode == sf::Keyboard::Scancode::Escape){
-
                     window->close();
                 }
+                //Klawisz TAB
+                if (keyPress->code == sf::Keyboard::Key::Tab) {
+                    if(state==1){
+                        if(active_field==0){
+                            // Przełącza poa do pisania
+                            active_field = 1;
+                            // Resetuje frame_count, żeby kursor od razu się pojawił w nowym polu
+                            frame_count = 0; 
+                        }
+                    }
+                }
+                //Klawisz ENTER
+                if (keyPress->code == sf::Keyboard::Key::Enter) {
+                    if(state==1){
+                        if(active_field==1){//Sprawdza dane do logowania i przechodzi do gry / na razie przechodzi do gry
+                            // button_animation(login_button,login_button_label,*window);//Tego pewnie nie widać
+
+                            
+                            state = 4;//Powraca do menu startowego
+                            active_field = -1;
+                            //Kasuje dane logowania
+                            login_input = "";
+                            password_input = "";
+                            login_input_text.setString("");
+                            password_input_text.setString("");
+                        }
+                    }
+                }
             }
+
             //Sprawdza kliknięcie guzików na starcie
             else if(state==0){
                 for(int i=0;i<max_num_of_buttons;i++){
                     if(button_action(buttons[i],*event,*window)){
-                        if(i==0) state = 1;//Sign in
+                        if(i==0){ state = 1; active_field = 0;}//Sign in
                         if(i==1) state = 2;//Sign up
                         if(i==2) state = 3;//Guess
                     }
                 }
             }
             else if(state==1){
+                //Guzik logowania, potem sprawdzenie danych i ewentualne przejście do następnej strony
                 if(button_action(login_button,*event,*window)){
                     std::cout<<"LOG IN!!!   " << std::endl;
                     std::cout<<active_field;
                 }
+                //Guzik powrotu
                 if(button_action(back_button,*event,*window)){
                     state = 0;//Powraca do menu startowego
                     active_field = -1;
+                    //Kasuje dane logowania
+                    login_input = "";
+                    password_input = "";
+                    login_input_text.setString("");
+                    password_input_text.setString("");
                 }
                 {
+                //Sprawdza w którym polu pisać
                 if(button_action(text_frames[2],*event,*window)) active_field = 0;//Ustawia pole loginu na aktywne
                 else if(button_action(text_frames[3],*event,*window)) active_field = 1;//Ustawia pole hasła na aktywne
                 }
+                //Wykrywa, wpisywanie teksu
+                if(active_field!=-1){
+                    switch (active_field){
+                        case 0:
+                            input_text(login_input,*event,15,active_field);
+                            login_input_text.setString(login_input);
+                            break;
+                        case 1:
+                            input_text(password_input,*event,15,active_field);                        
+                            password_input_text.setString(password_input);
+                            break;
+                    }
+                }
+
 
             }
         }
@@ -167,13 +237,24 @@ int main()
             window->draw(back_button_label);
             if(active_field!=-1){
                 if(active_field==0){
-                    cursor.setPosition({width/2.0f-80,height/2.0f-0.06f*height});
+                    // sf::Vector2f pozycja = login_input_text.findCharacterPos(login_input.length());
+                    cursor.setPosition({
+                        login_input_text.findCharacterPos(login_input.length()).x+2,
+                        login_input_text.findCharacterPos(login_input.length()).y+16
+                    });
                     if(frame_count>30) window->draw(cursor);
                 }
                 if(active_field==1){
-                    cursor.setPosition({width/2.0f-80,height/2.0f+0.06f*height});
+                    cursor.setPosition({
+                        password_input_text.findCharacterPos(password_input.length()).x+2,
+                        password_input_text.findCharacterPos(password_input.length()).y+12
+                    });
                     if(frame_count>30) window->draw(cursor);
                 }
+                //Wyświetla wprowadzane dane do logowania
+                window->draw(login_input_text);
+                window->draw(password_input_text);
+
 
             }
 

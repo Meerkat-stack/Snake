@@ -1,15 +1,16 @@
 #include <iostream>
 #include "includes/button.h"
 #include "includes/window_look.h"
-#include "includes/user.h"
+#include "includes/loging_page.h"
 
 #include <SFML/Graphics.hpp>
 
 #define Basil_color 0x1A471BFF //Że w sęsie ciemny zielony
-#define Piemontite_color  0x964B67FF//Że w sęsie fioletowy
+#define Piemontite_color  0x1A471BFF//0x964B67FF//Że w sęsie fioletowy      //Zamieniłem basil_color na ten bo różowy mi się przestął chyba podobać
 #define Apatite_color 0xF0FC97FF //Że w sęsie żółty
 #define Olive_color 0x92A22EFF //Że w sęsie jasny zielony
 #define Dark_color 0x161616FF
+#define Red_color 0xD7443EFF //kolor do ostrzeżeń
 
 #define max_num_of_buttons 3
 
@@ -27,7 +28,14 @@ int main()
     2 - Sign up
     3 - Guess
     4 - Game menu
+    5 - Play!
     */
+   int error_log = 0;
+   /*
+   0 - niezalogowany
+   -1 - błędne dane
+   1 - zalogowany
+   */
    int active_field = -1;//Zmienna określająca które pole ma przyjmować tekst, tam ustawia kursor
    unsigned int frame_count=0;//Zlicza klatki, przyda się do kursora
 
@@ -39,7 +47,7 @@ int main()
 
     //Ustawia ramkę wokoło ekranu
     sf::RectangleShape border({(float)width,(float)height});
-    border = build_border(width,height,Dark_color);
+    border = build_border(width,height,width/2.0f,height/2.0f,Dark_color);
 
     sf::Font font("fonts/BebasNeue-Regular.ttf");//ładuje czcionkę
 
@@ -89,6 +97,7 @@ int main()
     //Wpisywanie danych do logowania
     std::string login_input = "";
     std::string password_input = "";
+    std::string hide_password_input = "";
 
     //Tekst do wyświetlenia
     //Login
@@ -98,14 +107,24 @@ int main()
     login_input_text.setOrigin({bounds.position.x, 0.f});//Wyrównuje do lewej
     login_input_text.setPosition({width/2.0f-83,height/2.0f-0.06f*height-16});
     //Password
-    sf::Text password_input_text(font, password_input, 0.035f*height);//Ustawia dla napisu, czcionkę, tekst, rozmiar
+    sf::Text password_input_text(font, hide_password_input, 0.035f*height);//Ustawia dla napisu, czcionkę, tekst, rozmiar
     password_input_text.setFillColor(sf::Color(Dark_color));
     sf::FloatRect bounds2 = password_input_text.getLocalBounds();
     password_input_text.setOrigin({bounds.position.x, 0.f});//Wyrównuje do lewej
     password_input_text.setPosition({width/2.0f-83,height/2.0f+0.06f*height-12});
 
-
-
+    //Ostrzeżenie o złych danych podanych przy logowaniu
+    sf::RectangleShape error_log_frame({0.24f*width+10+20,(0.04f*height+20)*4.7f});
+    error_log_frame.setOrigin(error_log_frame.getGeometricCenter());
+    error_log_frame.setPosition({width/2.0f-5,height/2.0f+26});
+    error_log_frame.setFillColor(sf::Color::Transparent);
+    error_log_frame.setOutlineColor(sf::Color(Red_color));
+    error_log_frame.setOutlineThickness(2);
+    //Komunikat
+    sf::Text error_log_text(font,"",(int)(0.5f*0.037f*height+3));
+    error_log_text = label((int)(0.5f*0.037f*height+3),(int)(width/2.0f*0.918),(int)(height*0.36f), "Invalid username or password",Red_color,font);
+    error_log_text.setOutlineColor(sf::Color(Dark_color));
+    error_log_text.setOutlineThickness(-0.5);
 
 
     //Pętla gry, wykonuje się do puki do puty okno jest otwarte
@@ -146,16 +165,10 @@ int main()
                     if(state==1){
                         if(active_field==1){//Sprawdza dane do logowania i przechodzi do gry / na razie przechodzi do gry
                             // button_animation(login_button,login_button_label,*window);//Tego pewnie nie widać
-
-                            
-                            state = 4;//Powraca do menu startowego
                             active_field = -1;
-                            //Kasuje dane logowania
-                            login_input = "";
-                            password_input = "";
-                            login_input_text.setString("");
-                            password_input_text.setString("");
+                            log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);
                         }
+                        else if(active_field==0) active_field=1;//Przechodzi do następnego pola
                     }
                 }
             }
@@ -173,8 +186,11 @@ int main()
             else if(state==1){
                 //Guzik logowania, potem sprawdzenie danych i ewentualne przejście do następnej strony
                 if(button_action(login_button,*event,*window)){
-                    std::cout<<"LOG IN!!!   " << std::endl;
-                    std::cout<<active_field;
+                    // std::cout<<"LOG IN!!!   " << std::endl;//Debug
+                    // std::cout<<active_field;//Debug
+                    log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);
+
+                                        
                 }
                 //Guzik powrotu
                 if(button_action(back_button,*event,*window)){
@@ -183,8 +199,10 @@ int main()
                     //Kasuje dane logowania
                     login_input = "";
                     password_input = "";
+                    hide_password_input = "";
                     login_input_text.setString("");
                     password_input_text.setString("");
+                    error_log = 0;
                 }
                 {
                 //Sprawdza w którym polu pisać
@@ -195,12 +213,12 @@ int main()
                 if(active_field!=-1){
                     switch (active_field){
                         case 0:
-                            input_text(login_input,*event,15,active_field);
+                            input_text(login_input,hide_password_input,*event,12,active_field);
                             login_input_text.setString(login_input);
                             break;
                         case 1:
-                            input_text(password_input,*event,15,active_field);                        
-                            password_input_text.setString(password_input);
+                            input_text(password_input,hide_password_input,*event,15,active_field);                        
+                            password_input_text.setString(hide_password_input);
                             break;
                     }
                 }
@@ -244,18 +262,20 @@ int main()
                     });
                     if(frame_count>30) window->draw(cursor);
                 }
-                if(active_field==1){
+                else if(active_field==1){
                     cursor.setPosition({
-                        password_input_text.findCharacterPos(password_input.length()).x+2,
-                        password_input_text.findCharacterPos(password_input.length()).y+12
+                        password_input_text.findCharacterPos(hide_password_input.length()).x+2,
+                        password_input_text.findCharacterPos(hide_password_input.length()).y+12
                     });
                     if(frame_count>30) window->draw(cursor);
                 }
                 //Wyświetla wprowadzane dane do logowania
                 window->draw(login_input_text);
                 window->draw(password_input_text);
-
-
+            }
+            if(error_log==-1) {//Wyświetla ostrzeżenie o nieporawnym logowaniu
+                window->draw(error_log_frame);
+                window->draw(error_log_text);
             }
 
             break;

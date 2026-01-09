@@ -34,11 +34,17 @@ void input_text(std::string& target_string,std::string& hide_target_string, cons
         uint32_t unicode = textEvent->unicode;
 
         // 2. Obsługa klawisza Backspace (usuwanie)
-        if (unicode == 8) { 
-            if (!target_string.empty()) {
-                target_string.pop_back();
+        // 2. Obsługa klawisza Backspace (usuwanie)
+    if (unicode == 8) { 
+        if (!target_string.empty()) {
+            target_string.pop_back(); // Usuwa ostatni znak hasła
+
+            // POPRAWKA: Jeśli to pole hasła, usuń też gwiazdkę!
+            if (active_field == 1 && !hide_target_string.empty()) {
+                hide_target_string.pop_back();
             }
         }
+    }
         // 3. Obsługa zwykłych znaków (od spacji wzwyż)
         else if (unicode > 32 && unicode < 128) {
             // Dodajemy limit, żeby tekst nie uciekł z ekranu
@@ -63,14 +69,14 @@ int verify_user(std::string& username, std::string& password){
     std::ifstream file("userdata/users_log.txt");
     //Sprawdza czy napewno plik został otwarty
     if(!file.is_open()){
-        std::cout<<"Cannot open users_log.txt file to verify user.\n";
+        // std::cout<<"Cannot open users_log.txt file to verify user.\n";
         return -1;
     }
     else{
         std::string u, p;//u to odczytany login/ p to odczytane hasło
         while (file >> u >> p) {
-            std::cout<<u<<std::endl;//Debug
-            std::cout<<p<<std::endl;//Debug
+            // std::cout<<u<<std::endl;//Debug
+            // std::cout<<p<<std::endl;//Debug
             // W każdej pętli 'u' to login, a 'p' to hasło z jednej linijki
             if (u == username && p == password) {
                 file.close();//Zamyka plik
@@ -85,8 +91,8 @@ int verify_user(std::string& username, std::string& password){
 
 void log(int& state, int& error_log,std::string& login_input,std::string& password_input,std::string& hide_password_input,sf::Text& login_input_text, sf::Text& password_input_text){
     int loging_status = verify_user(login_input,password_input);
-    std::cout<<login_input<<std::endl;//Debug
-    std::cout<<password_input<<std::endl;//Debug
+    // std::cout<<login_input<<std::endl;//Debug
+    // std::cout<<password_input<<std::endl;//Debug
             
     //Kasuje dane logowania
     login_input = "";
@@ -103,13 +109,13 @@ void log(int& state, int& error_log,std::string& login_input,std::string& passwo
             //logowanie niepowiodło się dane mają się usunąć, pojawić ramka czerwona i komunikat
             state = 1;//Potem 4
             error_log = -1;//Zmienna informuje że trzeba wyświetlić ostrzeżenie
-            std::cout<<"Brak dostępu\n";//Debug
+            // std::cout<<"Brak dostępu\n";//Debug
             break;
         case 1:
             //Przejście do następnej strony, dostęp przyznany
-            state = 5;
+            state = 4;
             error_log = 1;//Brak problemów z logowaniem
-            std::cout<<"Zalogowano\n";
+            // std::cout<<"Zalogowano\n";
 
     }
 }

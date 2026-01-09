@@ -2,6 +2,7 @@
 #include "includes/button.h"
 #include "includes/window_look.h"
 #include "includes/loging_page.h"
+#include "includes/signup_page.cpp"
 
 #include <SFML/Graphics.hpp>
 
@@ -60,7 +61,7 @@ int main()
     sf::Text buttons_labels[max_num_of_buttons]={sf::Text(font),sf::Text(font),sf::Text(font)};//Tablica przechowująca tekst
 
     build_start_bttons(width,height,Apatite_color,Dark_color,buttons,buttons_labels,font);
-
+    //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     //state = 1 | Sign in
     sf::RectangleShape text_frames[4];//Tablica przechowująca przyciski
     sf::Text labels_log[2]={sf::Text(font),sf::Text(font)};//Przechowuje napisy przy polach do logowania
@@ -127,6 +128,21 @@ int main()
     error_log_text.setOutlineThickness(-0.5);
 
 
+
+
+    //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    //state = 3 || state == 4 | Game menu
+    sf::RectangleShape statistic_bg({width*0.85f,height*0.4f});
+    statistic_bg.setOrigin(statistic_bg.getGeometricCenter());
+    statistic_bg.setPosition({width/2.0f,height/4.0f*1.05f});
+    statistic_bg.setFillColor(sf::Color(Apatite_color));
+    statistic_bg.setOutlineColor(sf::Color(Dark_color));
+    statistic_bg.setOutlineThickness(2);
+
+
+
+
+
     //Pętla gry, wykonuje się do puki do puty okno jest otwarte
     while(window->isOpen()){
         {
@@ -138,7 +154,7 @@ int main()
         //Pętla zdażeń
         while (const std::optional<sf::Event> event = window->pollEvent()){
 
-            //Jak wcisnąć krzyzyk to sie zamyka
+            //Jak wcisnąć krzyżyk to sie zamyka
             if(event->is<sf::Event::Closed>()){
                 window->close();//Bez tego krzyżyk nie działa
             }
@@ -151,7 +167,7 @@ int main()
                 }
                 //Klawisz TAB
                 if (keyPress->code == sf::Keyboard::Key::Tab) {
-                    if(state==1){
+                    if(state==1||state==2){
                         if(active_field==0){
                             // Przełącza poa do pisania
                             active_field = 1;
@@ -162,11 +178,12 @@ int main()
                 }
                 //Klawisz ENTER
                 if (keyPress->code == sf::Keyboard::Key::Enter) {
-                    if(state==1){
+                    if(state==1||state==2){
                         if(active_field==1){//Sprawdza dane do logowania i przechodzi do gry / na razie przechodzi do gry
                             // button_animation(login_button,login_button_label,*window);//Tego pewnie nie widać
                             active_field = -1;
-                            log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);
+                            if(state==1) log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);
+                            else if(state==2) sign_up(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text,active_field);
                         }
                         else if(active_field==0) active_field=1;//Przechodzi do następnego pola
                     }
@@ -178,19 +195,32 @@ int main()
                 for(int i=0;i<max_num_of_buttons;i++){
                     if(button_action(buttons[i],*event,*window)){
                         if(i==0){ state = 1; active_field = 0;}//Sign in
-                        if(i==1) state = 2;//Sign up
+                        if(i==1) {state = 2; active_field = 0;}//Sign up
                         if(i==2) state = 3;//Guess
                     }
                 }
+                //Animacja guzików
+                for(int i=0;i<max_num_of_buttons;i++){
+                    button_animation(buttons[i],buttons_labels[i],*window);
+                }
+
             }
-            else if(state==1){
+            else if(state==1||state==2){
+                
+                {
+                if(state==1) login_button_label.setString("LOG IN");
+                else if(state==2) login_button_label.setString("SIGNUP");
+                }
+                
+                button_animation(login_button,login_button_label,*window);
+                button_animation(back_button,back_button_label,*window);
+
                 //Guzik logowania, potem sprawdzenie danych i ewentualne przejście do następnej strony
                 if(button_action(login_button,*event,*window)){
                     // std::cout<<"LOG IN!!!   " << std::endl;//Debug
                     // std::cout<<active_field;//Debug
-                    log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);
-
-                                        
+                    if (state==1) log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);              
+                    else if (state==2) sign_up(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text,active_field);
                 }
                 //Guzik powrotu
                 if(button_action(back_button,*event,*window)){
@@ -226,16 +256,8 @@ int main()
 
             }
         }
-        //Animacja guzików
-        if(state == 0){
-            for(int i=0;i<max_num_of_buttons;i++){
-                button_animation(buttons[i],buttons_labels[i],*window);
-            }
-        }
-        else if(state==1){
-            button_animation(login_button,login_button_label,*window);
-            button_animation(back_button,back_button_label,*window);
-        }
+
+        
         
 
         //Renderowanie
@@ -246,7 +268,7 @@ int main()
             for(int i=0;i<3;i++){window->draw(buttons[i]);}//wyświetla przyciski logowania
             for(int i=0;i<3;i++){window->draw(buttons_labels[i]);}//wyświetla etykiety przycisków logowania
             break;
-        case 1://Sign in side
+        case 1:case 2://Sign in side
             for(int i=0;i<4;i++){window->draw(text_frames[i]);}//wyświetla przyciski logowania
             for(int i=0;i<2;i++){window->draw(labels_log[i]);}//Wyświetla opisy pól
             window->draw(login_button);
@@ -273,16 +295,25 @@ int main()
                 window->draw(login_input_text);
                 window->draw(password_input_text);
             }
+            {
             if(error_log==-1) {//Wyświetla ostrzeżenie o nieporawnym logowaniu
+                error_log_text.setString("Invalid username or password");
                 window->draw(error_log_frame);
                 window->draw(error_log_text);
             }
+            else if(error_log==-2){
+                error_log_text.setString("Username already taken");
+                window->draw(error_log_frame);
+                window->draw(error_log_text);
+            }
+            }
+
+            break;            
 
             break;
-        case 2:
-
-            break;
-        case 3: case 4:
+        case 3: 
+        case 4:
+            window->draw(statistic_bg);
 
             break;
         }

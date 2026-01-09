@@ -66,3 +66,7 @@ Nazwa:IrrationalSnake?
 Chyba lepsze kolory trzeba dobrać
 Ewentualnie jakąś teksturę
 
+Statystyki:
+-Podstawowe [przebyte pixele] [czas gry] [najdłuższy i najmniejszy wunsz]
+-Rozszerzone [przyczyny zgonów] [optymalizacaja ruchów (ile gracz kręcił się jak gówno w betoniarce a nie do liczb leciał jak mucha do gówna)] [odblokowane mapy/skiny] 
+

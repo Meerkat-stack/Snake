@@ -2,6 +2,8 @@
 #define SIGNUP_PAGE_H
 #include <SFML/Graphics.hpp>
 #include "signup_page.cpp"
+#include "seciurity.h"
+
 
 int add_user(
     std::string& username,//Nazwa użytkownika 

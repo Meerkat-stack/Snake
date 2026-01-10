@@ -33,8 +33,8 @@ void input_text(
 
 //Funkcja sprawdzająca dane logowania
 int verify_user(
-    std::string& username,//Login
-    std::string& password//Hasło
+    std::string username,//Login
+    std::string password//Hasło
 );
 
 //Funkcja logująca użytkownika

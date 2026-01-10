@@ -1,6 +1,8 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <fstream>
+#include "seciurity.h"
+
 
 //Tworzy rakme na tekst
 sf::RectangleShape text_frame(float a, float b, float x, float y, unsigned int border_color){
@@ -60,7 +62,9 @@ void input_text(std::string& target_string,std::string& hide_target_string, cons
 }
 
 //sprawdza dane logowania
-int verify_user(std::string& username, std::string& password){
+int verify_user(std::string username, std::string password){
+    encrypt(username,16);
+    encrypt(password,16);
     //zwraca 0 gdy błędne dane logowania
     //zwraca 1 gdy zalogowano
     //zwraca -1 gdy nie otwarto pliku

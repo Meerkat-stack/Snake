@@ -1,4 +1,5 @@
 #include <iostream>
+#include "includes/seciurity.h"
 #include "includes/button.h"
 #include "includes/window_look.h"
 #include "includes/loging_page.h"

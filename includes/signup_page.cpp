@@ -1,10 +1,13 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "seciurity.h"
 
 
 //Funkcja która sprawdza czy nazwa użytkownika nie jest zajęta
 //Funckaj która zapisuje użytkownika w książce adresów
 int add_user(std::string& username, std::string& password) {
+    encrypt(username,16);
+    encrypt(password,16);
     // zwraca 1 gdy zarejestrowano pomyślnie
     // zwraca 0 gdy użytkownik o takim loginie już istnieje
     // zwraca -1 gdy nie można otworzyć/zapisać pliku

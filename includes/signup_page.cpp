@@ -1,11 +1,11 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include "seciurity.h"
+#include <fstream>
 
 
 //Funkcja która sprawdza czy nazwa użytkownika nie jest zajęta
 //Funckaj która zapisuje użytkownika w książce adresów
-int add_user(std::string& username, std::string& password) {
+int add_user(std::string username, std::string password) {
     encrypt(username,16);
     encrypt(password,16);
     // zwraca 1 gdy zarejestrowano pomyślnie
@@ -28,16 +28,21 @@ int add_user(std::string& username, std::string& password) {
     // 2. DOPISUJEMY NOWEGO UŻYTKOWNIKA
     // std::ios::app sprawia, że nie kasujemy pliku, tylko dopisujemy na końcu
     std::ofstream file_out("userdata/users_log.txt", std::ios::app);
+
+    //dopisuje gracza
+    std::ofstream file_player("userdata/users_data.txt",std::ios::app);
     
-    if (!file_out.is_open()) {
+    if (!file_out.is_open()||!file_player.is_open()) {
         // std::cout << "Cannot open users_log.txt to add user.\n";
         return -1;
     }
 
     // Zapisujemy: login [spacja] hasło [nowa linia]
     file_out << username << " " << password << "\n";
+    file_player<<username<<" 0 0 0 0 0 0 1 1\n";
     
     file_out.close();
+    file_player.close();
     return 1; // Sukces
 }
 

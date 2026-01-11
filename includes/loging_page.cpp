@@ -1,7 +1,6 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <fstream>
-#include "seciurity.h"
 
 
 //Tworzy rakme na tekst
@@ -98,13 +97,6 @@ void log(int& state, int& error_log,std::string& login_input,std::string& passwo
     // std::cout<<login_input<<std::endl;//Debug
     // std::cout<<password_input<<std::endl;//Debug
             
-    //Kasuje dane logowania
-    login_input = "";
-    password_input = "";
-    hide_password_input = "";
-    login_input_text.setString("");
-    password_input_text.setString("");
-
     switch (loging_status){
         case -1:
             state = 0;//Jesli brak pliku z haslami przechodzi do menu startowego
@@ -114,12 +106,53 @@ void log(int& state, int& error_log,std::string& login_input,std::string& passwo
             state = 1;//Potem 4
             error_log = -1;//Zmienna informuje że trzeba wyświetlić ostrzeżenie
             // std::cout<<"Brak dostępu\n";//Debug
+            login_input = "";
+            password_input = "";
+            hide_password_input = "";
+            login_input_text.setString("");
+            password_input_text.setString("");
             break;
         case 1:
             //Przejście do następnej strony, dostęp przyznany
             state = 4;
             error_log = 1;//Brak problemów z logowaniem
+            //Wypełnia dane o graczu
+            std::ifstream file_user("userdata/users_data.txt");
+            // player.name = login_input;
+
+            
+            while (file_user >> player.name 
+                >> player.total_pixels_traveled 
+                >> player.total_play_time_sec 
+                >> player.snake_max_length 
+                >> player.snake_min_length 
+                >> player.deaths_wall 
+                >> player.deaths_self 
+                >> player.unlocked_maps_count 
+                >> player.unlocked_skins_count) 
+            {
+                // std::cout<<player.name<<std::endl;//Debug
+                // std::cout<<player.name;
+                decrypt(player.name,16);
+                // std::cout<<player.name;
+
+                if (player.name == login_input) {
+                    // Znalazłeś! Przerywasz czytanie pliku
+                    std::cout<<player.name<<"found him\n";//Debug
+                    break; 
+                }
+            }
+
+            file_user.close();
+            //Kasuje dane logowania
+            login_input = "";
+            password_input = "";
+            hide_password_input = "";
+            login_input_text.setString("");
+            password_input_text.setString("");
+
             // std::cout<<"Zalogowano\n";
+            // std::cout<<player.name<<player.total_pixels_traveled<<std::endl;//Debug
 
     }
 }

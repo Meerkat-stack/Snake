@@ -1,9 +1,11 @@
 #include <iostream>
 #include "includes/seciurity.h"
+#include "includes/player.h"
 #include "includes/button.h"
 #include "includes/window_look.h"
 #include "includes/loging_page.h"
-#include "includes/signup_page.cpp"
+#include "includes/signup_page.h"
+
 
 #include <SFML/Graphics.hpp>
 
@@ -16,6 +18,7 @@
 
 #define max_num_of_buttons 3
 
+Player player;
 
 int main()
 {
@@ -139,14 +142,28 @@ int main()
     statistic_bg.setFillColor(sf::Color(Apatite_color));
     statistic_bg.setOutlineColor(sf::Color(Dark_color));
     statistic_bg.setOutlineThickness(2);
+    
 
+    sf::Text name(font,player.name,(int)(0.035f*height));
+    name.setFillColor(sf::Color(Dark_color));
+    // text.setOutlineColor(sf::Color(Dark_color));
+    // text.setOutlineThickness(-1.f);
+
+    //Ustawia punkt odniesienia napisu 
+    sf::FloatRect bounds_name = name.getLocalBounds();
+    // text.setOrigin({bounds.position.x, 0.f});//Wyrównuje do lewej
+    // text.setOrigin({bounds.position.x+bounds.size.x, 0.f});//Wyrównuje do prawej
+    name.setOrigin({bounds_name.position.x+bounds.size.x/2,//Wyrównuje do środka
+                    (float)name.getCharacterSize()*0.6f});//To ustawia dolny punkt odniesienia na linijkę do pisania
+                    //Tak samo jak masz linijki w zeszycie to tu the same
+    name.setPosition({width/2.0f,height/4.0f});
 
 
 
 
     //Pętla gry, wykonuje się do puki do puty okno jest otwarte
     while(window->isOpen()){
-        {
+        {//Zlicza klatki dla kursora
         if(frame_count> 60) frame_count = 0;
         else frame_count++;
         }
@@ -157,6 +174,7 @@ int main()
 
             //Jak wcisnąć krzyżyk to sie zamyka
             if(event->is<sf::Event::Closed>()){
+                save_player();
                 window->close();//Bez tego krzyżyk nie działa
             }
 
@@ -164,6 +182,7 @@ int main()
             else if(const auto* keyPress = event->getIf<sf::Event::KeyPressed>()){
                 //Ustawia klawisz esc jako wyjście
                 if(keyPress->scancode == sf::Keyboard::Scancode::Escape){
+                    save_player();
                     window->close();
                 }
                 //Klawisz TAB
@@ -179,6 +198,7 @@ int main()
                 }
                 //Klawisz ENTER
                 if (keyPress->code == sf::Keyboard::Key::Enter) {
+                    // std::cout<<player.name<<std::endl;//Debug
                     if(state==1||state==2){
                         if(active_field==1){//Sprawdza dane do logowania i przechodzi do gry / na razie przechodzi do gry
                             // button_animation(login_button,login_button_label,*window);//Tego pewnie nie widać
@@ -197,7 +217,7 @@ int main()
                     if(button_action(buttons[i],*event,*window)){
                         if(i==0){ state = 1; active_field = 0;}//Sign in
                         if(i==1) {state = 2; active_field = 0;}//Sign up
-                        if(i==2) state = 3;//Guess
+                        if(i==2) {state = 3;player.name = "Guest";}//Guess
                     }
                 }
                 //Animacja guzików
@@ -315,11 +335,13 @@ int main()
         case 3: 
         case 4:
             window->draw(statistic_bg);
+            name.setString(player.name);
+            window->draw(name);
 
             break;
         }
 
-            window->draw(border);//wyświetla ramkę
+        window->draw(border);//wyświetla ramkę
 
         window->display();
     }

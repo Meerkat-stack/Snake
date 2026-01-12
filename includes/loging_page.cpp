@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include "seciurity.h"
-
+#include "player.h"
 
 //Tworzy rakme na tekst
 sf::RectangleShape text_frame(float a, float b, float x, float y, unsigned int border_color){
@@ -96,7 +96,7 @@ int verify_user(std::string username, std::string password){
 
 }
 
-void log(int& state, int& error_log,std::string& login_input,std::string& password_input,std::string& hide_password_input,sf::Text& login_input_text, sf::Text& password_input_text){
+void log(int& state, int& error_log,std::string& login_input,std::string& password_input,std::string& hide_password_input,sf::Text& login_input_text, sf::Text& password_input_text,sf::Text* statistic){
     int loging_status = verify_user(login_input,password_input);
     // std::cout<<login_input<<std::endl;//Debug
     // std::cout<<password_input<<std::endl;//Debug
@@ -116,6 +116,7 @@ void log(int& state, int& error_log,std::string& login_input,std::string& passwo
         case 1:
             player.name = login_input;
             read_player();
+            update_player_stat(statistic);//Odświeża statystki gracza (napisy)
             //Przejście do następnej strony, dostęp przyznany
             state = 4;
             error_log = 1;//Brak problemów z logowaniem

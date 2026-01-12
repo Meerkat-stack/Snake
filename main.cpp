@@ -5,6 +5,7 @@
 #include "includes/window_look.h"
 #include "includes/loging_page.h"
 #include "includes/signup_page.cpp"
+#include "includes/math_const.h"
 
 #include <SFML/Graphics.hpp>
 
@@ -54,11 +55,14 @@ int main()
     border = build_border(width,height,width/2.0f,height/2.0f,Dark_color);
 
     sf::Font font("fonts/BebasNeue-Regular.ttf");//ładuje czcionkę
+    sf::Font math_font("fonts/arial/arial.ttf");//czcionka odpowiadająca za symbole matematyczne
 
     //Naprawia rozpikselizowany tekst
     const_cast<sf::Texture&>(font.getTexture((int)(0.5f*0.037f*height+3))).setSmooth(false);//Lepsza jakość tekstu
     const_cast<sf::Texture&>(font.getTexture(0.035f*height)).setSmooth(false);//Lepsza jakość tekstu
-
+    const_cast<sf::Texture&>(font.getTexture((int)(1.5*(0.5f*0.037f*height+3)))).setSmooth(false);//Lepsza jakość tekstu
+    const_cast<sf::Texture&>(font.getTexture((int)(4*1.5*(0.5f*0.037f*height+3)))).setSmooth(false);//Lepsza jakość tekstu
+    
     //Tworzy przyciski na ekranie startowym
     sf::RectangleShape buttons[max_num_of_buttons];//Tablica przechowująca przyciski
     sf::Text buttons_labels[max_num_of_buttons]={sf::Text(font),sf::Text(font),sf::Text(font)};//Tablica przechowująca tekst
@@ -137,11 +141,16 @@ int main()
     //state = 3 || state == 4 | Game menu
     sf::RectangleShape statistic_bg({width*0.85f,height*0.4f});
     statistic_bg.setOrigin(statistic_bg.getGeometricCenter());
-    statistic_bg.setPosition({width/2.0f,height/4.0f*1.05f});
+    statistic_bg.setPosition({width/2.0f,height/4.0f*1.04f});
     statistic_bg.setFillColor(sf::Color(Apatite_color));
     statistic_bg.setOutlineColor(sf::Color(Dark_color));
     statistic_bg.setOutlineThickness(2);
 
+    //Tablica przechowująca napisy ze statystykami gracza
+    sf::Text statistic_player_text[9]{sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(math_font)};
+    build_player_stat(statistic_player_text,font,math_font,width,height,Dark_color);
+
+    //tutaj do zmodyfikowania liczba tych statystyk
 
 
 
@@ -186,7 +195,7 @@ int main()
                         if(active_field==1){//Sprawdza dane do logowania i przechodzi do gry / na razie przechodzi do gry
                             // button_animation(login_button,login_button_label,*window);//Tego pewnie nie widać
                             active_field = -1;
-                            if(state==1) log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);
+                            if(state==1) log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text,statistic_player_text);
                             else if(state==2) sign_up(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text,active_field);
                         }
                         else if(active_field==0) active_field=1;//Przechodzi do następnego pola
@@ -199,8 +208,8 @@ int main()
                 for(int i=0;i<max_num_of_buttons;i++){
                     if(button_action(buttons[i],*event,*window)){
                         if(i==0){ state = 1; active_field = 0;}//Sign in
-                        if(i==1) {state = 2; active_field = 0;}//Sign up
-                        if(i==2) state = 3;//Guess
+                        if(i==1){state = 2; active_field = 0;}//Sign up
+                        if(i==2){state = 3;update_player_stat(statistic_player_text);}//Guess
                     }
                 }
                 //Animacja guzików
@@ -223,7 +232,7 @@ int main()
                 if(button_action(login_button,*event,*window)){
                     // std::cout<<"LOG IN!!!   " << std::endl;//Debug
                     // std::cout<<active_field;//Debug
-                    if (state==1) log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text);              
+                    if (state==1) log(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text,statistic_player_text);              
                     else if (state==2) sign_up(state,error_log,login_input,password_input,hide_password_input,login_input_text,password_input_text,active_field);
                 }
                 //Guzik powrotu
@@ -318,7 +327,9 @@ int main()
         case 3: 
         case 4:
             window->draw(statistic_bg);
-
+            for(int i=0;i<9;i++){
+                window->draw(statistic_player_text[i]);
+            }
             break;
         }
 
@@ -326,7 +337,6 @@ int main()
 
         window->display();
     }
-
 
     save_player();//Zapisuje dane gracza
     delete window;//Po zakończeniu programu, usuwa okno

@@ -63,11 +63,14 @@ void input_text(std::string& target_string,std::string& hide_target_string, cons
 
 //sprawdza dane logowania
 int verify_user(std::string username, std::string password){
+    //szyfruje hasło i nazwe aby je znaleźć
     encrypt(username,16);
     encrypt(password,16);
     //zwraca 0 gdy błędne dane logowania
     //zwraca 1 gdy zalogowano
     //zwraca -1 gdy nie otwarto pliku
+
+    // std::cout<<"Szukane: "<<username<<" "<<password<<std::endl;//Debug
 
     //Wczytanie pliku z użytkownikami
     std::ifstream file("userdata/users_log.txt");
@@ -79,7 +82,7 @@ int verify_user(std::string username, std::string password){
     else{
         std::string u, p;//u to odczytany login/ p to odczytane hasło
         while (file >> u >> p) {
-            // std::cout<<u<<std::endl;//Debug
+            // std::cout<<u<<" "<<p<<std::endl;//Debug
             // std::cout<<p<<std::endl;//Debug
             // W każdej pętli 'u' to login, a 'p' to hasło z jednej linijki
             if (u == username && p == password) {
@@ -97,13 +100,8 @@ void log(int& state, int& error_log,std::string& login_input,std::string& passwo
     int loging_status = verify_user(login_input,password_input);
     // std::cout<<login_input<<std::endl;//Debug
     // std::cout<<password_input<<std::endl;//Debug
-            
-    //Kasuje dane logowania
-    login_input = "";
-    password_input = "";
-    hide_password_input = "";
-    login_input_text.setString("");
-    password_input_text.setString("");
+
+    // std::cout<<loging_status;//Debug
 
     switch (loging_status){
         case -1:
@@ -116,10 +114,25 @@ void log(int& state, int& error_log,std::string& login_input,std::string& passwo
             // std::cout<<"Brak dostępu\n";//Debug
             break;
         case 1:
+            player.name = login_input;
+            read_player();
             //Przejście do następnej strony, dostęp przyznany
             state = 4;
             error_log = 1;//Brak problemów z logowaniem
             // std::cout<<"Zalogowano\n";
+            //Debug
+            // std::cout<<player.name<<std::endl;
+            // std::cout<<player.total_pixels_traveled<<std::endl;
+            // std::cout<<player.snake_max_length<<std::endl;
+            // std::cout<<player.deaths_wall<<std::endl;
+            // std::cout<<player.deaths_self<<std::endl;
+            // std::cout<<player.unlocked_maps_count<<std::endl;
 
     }
+    //Kasuje dane logowania
+    login_input = "";
+    password_input = "";
+    hide_password_input = "";
+    login_input_text.setString("");
+    password_input_text.setString("");
 }

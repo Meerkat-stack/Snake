@@ -1,5 +1,6 @@
 #include <iostream>
 #include "includes/seciurity.h"
+#include "includes/player.h"
 #include "includes/button.h"
 #include "includes/window_look.h"
 #include "includes/loging_page.h"
@@ -16,6 +17,7 @@
 
 #define max_num_of_buttons 3
 
+Player player;
 
 int main()
 {
@@ -164,6 +166,7 @@ int main()
             else if(const auto* keyPress = event->getIf<sf::Event::KeyPressed>()){
                 //Ustawia klawisz esc jako wyjście
                 if(keyPress->scancode == sf::Keyboard::Scancode::Escape){
+
                     window->close();
                 }
                 //Klawisz TAB
@@ -324,6 +327,8 @@ int main()
         window->display();
     }
 
+
+    save_player();//Zapisuje dane gracza
     delete window;//Po zakończeniu programu, usuwa okno
     return 0;
 }

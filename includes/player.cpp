@@ -198,3 +198,28 @@ void update_player_stat(sf::Text* statistic){
     }
 
 }
+
+void build_stat_bg(sf::RectangleShape* bg,unsigned int width, unsigned int height, unsigned int bg_color, unsigned int front_color){
+    sf::RectangleShape statistic_bg({width*0.85f,height*0.4f});
+    statistic_bg.setOrigin(statistic_bg.getGeometricCenter());
+    statistic_bg.setPosition({width/2.0f,height/4.0f*1.04f});
+    statistic_bg.setFillColor(sf::Color(bg_color));
+    statistic_bg.setOutlineColor(sf::Color(front_color));
+    statistic_bg.setOutlineThickness(2);
+
+    bg[0] = statistic_bg;
+
+    bg[1] = sf::RectangleShape({2.0f,height*0.4f*0.565f});
+    bg[2] = sf::RectangleShape({width*0.85f,2.0f});
+    bg[3] = sf::RectangleShape({width*0.85f,2.0f});
+
+    for(int i=0;i<3;i++){
+        bg[i+1].setFillColor(sf::Color(front_color));
+        bg[i+1].setOrigin(bg[i+1].getGeometricCenter());
+    }
+
+    bg[1].setPosition({width/2.0f,height/4.0f*(1.45f+0.55f)/2.0f});
+    bg[2].setPosition({width/2.0f,height/4.0f*1.45f});
+    bg[3].setPosition({width/2.0f,height/4.0f*0.55f});
+
+}

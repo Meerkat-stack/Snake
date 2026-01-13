@@ -25,6 +25,10 @@ void update_player_stat(
     sf::Text* statistic
 );
 
+void build_stat_bg(
+    sf::RectangleShape* bg//Tablica przechowująca kształty wokoło statystyk
+);
+
 
 
 #endif

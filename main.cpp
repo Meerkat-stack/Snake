@@ -139,18 +139,15 @@ int main()
 
     //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     //state = 3 || state == 4 | Game menu
-    sf::RectangleShape statistic_bg({width*0.85f,height*0.4f});
-    statistic_bg.setOrigin(statistic_bg.getGeometricCenter());
-    statistic_bg.setPosition({width/2.0f,height/4.0f*1.04f});
-    statistic_bg.setFillColor(sf::Color(Apatite_color));
-    statistic_bg.setOutlineColor(sf::Color(Dark_color));
-    statistic_bg.setOutlineThickness(2);
+
+    //Tablica przechowująca kształty przy statystykach
+    sf::RectangleShape statistic_player_bg[4];
+    build_stat_bg(statistic_player_bg,width,height,Apatite_color,Dark_color);
 
     //Tablica przechowująca napisy ze statystykami gracza
     sf::Text statistic_player_text[9]{sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(math_font)};
     build_player_stat(statistic_player_text,font,math_font,width,height,Dark_color);
 
-    //tutaj do zmodyfikowania liczba tych statystyk
 
 
 
@@ -326,7 +323,9 @@ int main()
             break;
         case 3: 
         case 4:
-            window->draw(statistic_bg);
+            for(int i=0;i<4;i++){
+                window->draw(statistic_player_bg[i]);
+            }
             for(int i=0;i<9;i++){
                 window->draw(statistic_player_text[i]);
             }

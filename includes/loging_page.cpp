@@ -66,6 +66,7 @@ int verify_user(std::string username, std::string password){
     //szyfruje hasło i nazwe aby je znaleźć
     encrypt(username,16);
     encrypt(password,16);
+
     //zwraca 0 gdy błędne dane logowania
     //zwraca 1 gdy zalogowano
     //zwraca -1 gdy nie otwarto pliku
@@ -85,6 +86,9 @@ int verify_user(std::string username, std::string password){
             // std::cout<<u<<" "<<p<<std::endl;//Debug
             // std::cout<<p<<std::endl;//Debug
             // W każdej pętli 'u' to login, a 'p' to hasło z jednej linijki
+
+            //Tutaj git podobno dodaje jakieś znaki na końcu
+
             if (u == username && p == password) {
                 file.close();//Zamyka plik
                 return 1;//Zweryfikowany i zalogowany

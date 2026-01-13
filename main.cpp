@@ -28,10 +28,14 @@
 
 // --- Konfiguracja gry ---
 const int TILE_SIZE = 25;
-const int WINDOW_WIDTH = 1000;
-const int UI_HEIGHT = 80;
-const int WINDOW_HEIGHT = 800 + UI_HEIGHT;
-
+const int WINDOW_WIDTH = 740;
+const int WINDOW_HEIGHT = 740;
+const int GRID_COLS = 24;
+const int GRID_ROWS = 24;
+const int BOARD_WIDTH_PX = GRID_COLS * TILE_SIZE;
+const int BOARD_HEIGHT_PX = GRID_ROWS * TILE_SIZE;
+const int OFFSET_X = (WINDOW_WIDTH - BOARD_WIDTH_PX) / 2;
+const int OFFSET_Y = 100; // Margines górny (miejsce na UI)
 const float BASE_SPEED = 0.1f;
 const float MAX_SPEED_CAP = 0.04f;
 const int APPLES_TO_MAX = 20;
@@ -47,7 +51,7 @@ struct SnakeGame {
     sf::Vector2i food;
     Direction dir;
     bool isGameOver;
-    bool consolePrinted; // Flaga, żeby wypisać wynik w konsoli tylko raz
+    bool consolePrinted;
 
     sf::Clock moveClock;
     sf::Clock gameTimeClock;
@@ -56,6 +60,8 @@ struct SnakeGame {
     int score;
     int highScore;
     float totalTime;
+
+    long long totalDistancePixels;
 
     std::mt19937 rng;
 
@@ -66,7 +72,7 @@ struct SnakeGame {
     sf::Text timeLabel, timeValue;
 
     SnakeGame()
-        : window(sf::VideoMode({ WINDOW_WIDTH, WINDOW_HEIGHT }), "Snake SFML 3.0.2 - Pointers"),
+        : window(sf::VideoMode({ WINDOW_WIDTH, WINDOW_HEIGHT }), "Snake SFML 3.0.2 - Pointers & Resized Board"),
         dir(Direction::Right),
         isGameOver(false),
         consolePrinted(false),
@@ -74,6 +80,7 @@ struct SnakeGame {
         score(0),
         highScore(0),
         totalTime(0),
+        totalDistancePixels(0),
         rng(std::random_device{}()),
         scoreLabel(font), scoreValue(font),
         highLabel(font), highValue(font),
@@ -90,26 +97,36 @@ struct SnakeGame {
         resetGame();
     }
 
-    // --- 2. FUNKCJA ZWRACAJĄCA WSKAŹNIK ---
-    // Zwraca adres w pamięci (float*), pod którym znajduje się totalTime
+    // Wskaźnik do czasu
     float* getTimePointer() {
         return &totalTime;
     }
 
+    // Wskaźnik do High Score
+    int* getHighScorePointer() {
+        return &highScore;
+    }
+
+    //Wskaźnik do dystansu
+    long long* getDistancePointer() {
+        return &totalDistancePixels;
+    }
+
     void setupHUD() {
-        unsigned int charSize = 30;
+        unsigned int charSize = 24;
         sf::Color labelColor = sf::Color(255, 215, 0);
         sf::Color valueColor = sf::Color::White;
-        float uiY = 20.f;
+        float uiY = 30.f; // Trochę niżej, bo mamy duży margines górny (100px)
 
+        // Rozmieszczenie UI
         scoreLabel.setString("SCORE:"); scoreLabel.setCharacterSize(charSize); scoreLabel.setFillColor(labelColor); scoreLabel.setPosition({ 40.f, uiY });
-        scoreValue.setCharacterSize(charSize); scoreValue.setFillColor(valueColor); scoreValue.setPosition({ 180.f, uiY });
+        scoreValue.setCharacterSize(charSize); scoreValue.setFillColor(valueColor); scoreValue.setPosition({ 140.f, uiY });
 
-        highLabel.setString("HI-SCORE:"); highLabel.setCharacterSize(charSize); highLabel.setFillColor(labelColor); highLabel.setPosition({ 400.f, uiY });
-        highValue.setCharacterSize(charSize); highValue.setFillColor(valueColor); highValue.setPosition({ 600.f, uiY });
+        highLabel.setString("HI-SCORE:"); highLabel.setCharacterSize(charSize); highLabel.setFillColor(labelColor); highLabel.setPosition({ 280.f, uiY });
+        highValue.setCharacterSize(charSize); highValue.setFillColor(valueColor); highValue.setPosition({ 430.f, uiY });
 
-        timeLabel.setString("TIME:"); timeLabel.setCharacterSize(charSize); timeLabel.setFillColor(labelColor); timeLabel.setPosition({ 800.f, uiY });
-        timeValue.setCharacterSize(charSize); timeValue.setFillColor(valueColor); timeValue.setPosition({ 900.f, uiY });
+        timeLabel.setString("TIME:"); timeLabel.setCharacterSize(charSize); timeLabel.setFillColor(labelColor); timeLabel.setPosition({ 580.f, uiY });
+        timeValue.setCharacterSize(charSize); timeValue.setFillColor(valueColor); timeValue.setPosition({ 660.f, uiY });
     }
 
     void loadHighScore() {
@@ -125,26 +142,26 @@ struct SnakeGame {
 
     void resetGame() {
         snake.clear();
-        snake.push_back({ 10, 10 });
-        snake.push_back({ 9, 10 });
-        snake.push_back({ 8, 10 });
+        // Startujemy węża na środku mniejszej planszy
+        snake.push_back({ 5, 5 });
+        snake.push_back({ 4, 5 });
+        snake.push_back({ 3, 5 });
 
         dir = Direction::Right;
         score = 0;
         isGameOver = false;
-        consolePrinted = false; // Resetujemy flagę konsoli
+        consolePrinted = false;
 
         spawnFood();
         gameTimeClock.restart();
         totalTime = 0;
+        totalDistancePixels = 0; // Reset dystansu
     }
 
     void spawnFood() {
-        int cols = WINDOW_WIDTH / TILE_SIZE;
-        int rows = (WINDOW_HEIGHT - UI_HEIGHT) / TILE_SIZE;
-
-        std::uniform_int_distribution<int> distX(0, cols - 1);
-        std::uniform_int_distribution<int> distY(0, rows - 1);
+        // Używamy GRID_COLS zamiast szerokości okna
+        std::uniform_int_distribution<int> distX(0, GRID_COLS - 1);
+        std::uniform_int_distribution<int> distY(0, GRID_ROWS - 1);
 
         bool validPosition = false;
         while (!validPosition) {
@@ -176,18 +193,23 @@ struct SnakeGame {
     }
 
     void update() {
-        // Jeśli gra się skończyła, sprawdź czy już wypisaliśmy info w konsoli
         if (isGameOver) {
             if (!consolePrinted) {
-                // --- 3. UŻYCIE WSKAŹNIKA I WYPISANIE W KONSOLI ---
-                float* ptr = getTimePointer(); // Pobieramy wskaźnik
+                // --- POBIERANIE WSKAŹNIKÓW I WYPISYWANIE ---
+                float* timePtr = getTimePointer();
+                int* hsPtr = getHighScorePointer();
+                long long* distPtr = getDistancePointer();
 
-                std::cout << "--- KONIEC GRY ---" << std::endl;
-                std::cout << "Adres zmiennej czasu (w pamieci): " << ptr << std::endl;
-                std::cout << "Wartosc pod tym adresem (sekundy): " << *ptr << std::endl;
-                std::cout << "------------------" << std::endl;
+                std::cout << "\n=== KONIEC GRY ===" << std::endl;
+                std::cout << "[CZAS]       Adres: " << timePtr << " | Wartosc: " << *timePtr << "s" << std::endl;
+                std::cout << "[HIGH SCORE] Adres: " << hsPtr << " | Wartosc: " << *hsPtr << std::endl;
 
-                consolePrinted = true; // Blokada, żeby nie wypisywać w kółko
+                // --- WYPISANIE DYSTANSU ---
+                std::cout << "[DYSTANS]    Adres: " << distPtr << " | Wartosc: " << *distPtr << " px" << std::endl;
+
+                std::cout << "==================\n" << std::endl;
+
+                consolePrinted = true;
             }
             return;
         }
@@ -196,7 +218,6 @@ struct SnakeGame {
         moveTimer += dt;
         totalTime = gameTimeClock.getElapsedTime().asSeconds();
 
-        // UI Update
         scoreValue.setString(std::to_string(score));
         highValue.setString(std::to_string(highScore));
         int totalSeconds = static_cast<int>(totalTime);
@@ -221,10 +242,8 @@ struct SnakeGame {
             case Direction::Right: newHead.x += 1; break;
             }
 
-            int cols = WINDOW_WIDTH / TILE_SIZE;
-            int rows = (WINDOW_HEIGHT - UI_HEIGHT) / TILE_SIZE;
-
-            if (newHead.x < 0 || newHead.x >= cols || newHead.y < 0 || newHead.y >= rows) {
+            // --- SPRAWDZANIE KOLIZJI Z NOWYMI WYMIARAMI PLANSZY ---
+            if (newHead.x < 0 || newHead.x >= GRID_COLS || newHead.y < 0 || newHead.y >= GRID_ROWS) {
                 isGameOver = true;
                 if (score > highScore) { highScore = score; saveHighScore(); }
                 return;
@@ -239,6 +258,9 @@ struct SnakeGame {
 
             snake.push_front(newHead);
 
+            // Dodajemy dystans (jeden ruch = wielkość kafelka)
+            totalDistancePixels += TILE_SIZE;
+
             if (newHead == food) {
                 score++;
                 if (score > highScore) { highScore = score; saveHighScore(); }
@@ -251,17 +273,22 @@ struct SnakeGame {
     }
 
     void render() {
-        window.clear(sf::Color(20, 20, 20));
+        window.clear(sf::Color(20, 20, 20)); // Ciemne tło dla okna (ramka)
 
-        int cols = WINDOW_WIDTH / TILE_SIZE;
-        int rows = (WINDOW_HEIGHT - UI_HEIGHT) / TILE_SIZE;
+        // Rysujemy tło planszy (trochę jaśniejsze tło pod szachownicą)
+        sf::RectangleShape boardBg(sf::Vector2f(static_cast<float>(BOARD_WIDTH_PX), static_cast<float>(BOARD_HEIGHT_PX)));
+        boardBg.setPosition({ static_cast<float>(OFFSET_X), static_cast<float>(OFFSET_Y) });
+        boardBg.setFillColor(sf::Color::Black);
+        window.draw(boardBg);
+
+        // --- Rysowanie Szachownicy (z uwzględnieniem OFFSETU) ---
         sf::RectangleShape bgRect(sf::Vector2f(static_cast<float>(TILE_SIZE), static_cast<float>(TILE_SIZE)));
 
-        for (int y = 0; y < rows; ++y) {
-            for (int x = 0; x < cols; ++x) {
+        for (int y = 0; y < GRID_ROWS; ++y) {
+            for (int x = 0; x < GRID_COLS; ++x) {
                 bgRect.setPosition({
-                    static_cast<float>(x * TILE_SIZE),
-                    static_cast<float>(y * TILE_SIZE + UI_HEIGHT)
+                    static_cast<float>(x * TILE_SIZE + OFFSET_X),
+                    static_cast<float>(y * TILE_SIZE + OFFSET_Y)
                     });
 
                 if ((x + y) % 2 == 0)
@@ -273,33 +300,38 @@ struct SnakeGame {
             }
         }
 
+        // --- Obramowanie planszy (opcjonalne, dla estetyki) ---
+        sf::RectangleShape border(sf::Vector2f(static_cast<float>(BOARD_WIDTH_PX + 4), static_cast<float>(BOARD_HEIGHT_PX + 4)));
+        border.setPosition({ static_cast<float>(OFFSET_X - 2), static_cast<float>(OFFSET_Y - 2) });
+        border.setFillColor(sf::Color::Transparent);
+        border.setOutlineColor(sf::Color::White);
+        border.setOutlineThickness(2);
+        window.draw(border);
+
+        // --- Rysowanie obiektów gry ---
         sf::RectangleShape gameRect(sf::Vector2f(static_cast<float>(TILE_SIZE), static_cast<float>(TILE_SIZE)));
         gameRect.setSize({ static_cast<float>(TILE_SIZE - 1), static_cast<float>(TILE_SIZE - 1) });
 
+        // Wąż
         for (size_t i = 0; i < snake.size(); ++i) {
             gameRect.setPosition({
-                static_cast<float>(snake[i].x * TILE_SIZE),
-                static_cast<float>(snake[i].y * TILE_SIZE + UI_HEIGHT)
+                static_cast<float>(snake[i].x * TILE_SIZE + OFFSET_X),
+                static_cast<float>(snake[i].y * TILE_SIZE + OFFSET_Y)
                 });
             if (i == 0) gameRect.setFillColor(sf::Color(0, 97, 255));
             else gameRect.setFillColor(sf::Color(0, 80, 220));
             window.draw(gameRect);
         }
 
+        // Jedzenie
         gameRect.setPosition({
-            static_cast<float>(food.x * TILE_SIZE),
-            static_cast<float>(food.y * TILE_SIZE + UI_HEIGHT)
+            static_cast<float>(food.x * TILE_SIZE + OFFSET_X),
+            static_cast<float>(food.y * TILE_SIZE + OFFSET_Y)
             });
         gameRect.setFillColor(sf::Color::Red);
         window.draw(gameRect);
 
-        sf::RectangleShape uiBar(sf::Vector2f(static_cast<float>(WINDOW_WIDTH), static_cast<float>(UI_HEIGHT)));
-        uiBar.setFillColor(sf::Color(30, 30, 30));
-        uiBar.setOutlineThickness(-2);
-        uiBar.setOutlineColor(sf::Color(100, 100, 100));
-        uiBar.setPosition({ 0.f, 0.f });
-        window.draw(uiBar);
-
+        // UI
         window.draw(scoreLabel); window.draw(scoreValue);
         window.draw(highLabel); window.draw(highValue);
         window.draw(timeLabel); window.draw(timeValue);
@@ -311,7 +343,7 @@ struct SnakeGame {
 
             sf::Text overText(font);
             overText.setString("GAME OVER");
-            overText.setCharacterSize(70);
+            overText.setCharacterSize(60);
             overText.setFillColor(sf::Color::Red);
 
             sf::FloatRect rect = overText.getLocalBounds();
@@ -320,7 +352,7 @@ struct SnakeGame {
 
             sf::Text subText(font);
             subText.setString("Press SPACE to Restart");
-            subText.setCharacterSize(30);
+            subText.setCharacterSize(24);
             subText.setFillColor(sf::Color::White);
 
             rect = subText.getLocalBounds();

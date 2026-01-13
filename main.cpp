@@ -6,22 +6,18 @@
 #include "includes/loging_page.h"
 #include "includes/signup_page.cpp"
 #include "includes/math_const.h"
+#include "includes/colors.h"
 
 #include <SFML/Graphics.hpp>
 
-#define Basil_color 0x1A471BFF //Że w sęsie ciemny zielony
-#define Piemontite_color  0x1A471BFF//0x964B67FF//Że w sęsie fioletowy      //Zamieniłem basil_color na ten bo różowy mi się przestął chyba podobać
-#define Apatite_color 0xF0FC97FF //Że w sęsie żółty
-#define Olive_color 0x92A22EFF //Że w sęsie jasny zielony
-#define Dark_color 0x161616FF
-#define Red_color 0xD7443EFF //kolor do ostrzeżeń
-
 #define max_num_of_buttons 3
+
+#include "includes/snake.cpp"//Wszystko co odpowiedzialne za gre
 
 Player player;
 
 int main()
-{
+{   
     //Rozmiary okna
     unsigned int width = 740;
     unsigned int height = 740;
@@ -51,6 +47,8 @@ int main()
 
     //Torzy okno
     sf::RenderWindow * window = new sf::RenderWindow(sf::VideoMode({width,height}),"Irrationa Snake");
+
+    SnakeGame snakeGame(window); //Tworzy węża i całą grę
 
     window->setFramerateLimit(60);//Ustawia klatkarz
 
@@ -184,8 +182,8 @@ int main()
             else if(const auto* keyPress = event->getIf<sf::Event::KeyPressed>()){
                 //Ustawia klawisz esc jako wyjście
                 if(keyPress->scancode == sf::Keyboard::Scancode::Escape){
-
-                    window->close();
+                    if(state==5) {update_player_stat(statistic_player_text); state = 4;snakeGame.resetGame();}
+                    else window->close();
                 }
                 //Klawisz TAB
                 if (keyPress->code == sf::Keyboard::Key::Tab) {
@@ -288,8 +286,8 @@ int main()
                         //Tu rozpocznie się gra!
                         std::cout<<gamemode<<std::endl;
 
-                        //state = 5;
-
+                        state = 5;
+                        snakeGame.resetGame();
                     }
             
                 }
@@ -302,7 +300,7 @@ int main()
         
 
         //Renderowanie
-        window->clear(sf::Color(Piemontite_color));//Kolor okna, nie rozumiem do końca systemu zapisu kolorów
+        window->clear(sf::Color(Basil_color));//Kolor okna, nie rozumiem do końca systemu zapisu kolorów
 
         switch (state){
         case 0://Start buttons
@@ -367,6 +365,15 @@ int main()
                 window->draw(gamemode_buttons_labels[i]);
             }
             break;
+        case 5:
+            snakeGame.playStep(); // Wywołujemy jeden krok logiki i rysowania węża
+        
+            // Jeśli chcesz wrócić do menu po przegranej:
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+                state = 4; // Wróć do menu wyboru trybu
+            }
+            break;
+        
         }
 
             window->draw(border);//wyświetla ramkę

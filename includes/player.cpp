@@ -254,8 +254,8 @@ void builda_gamemode_buttons(sf::RectangleShape* buttons,unsigned int width, uns
 //Funkcja tworząca etykiety dla przycisków
 void build_gamemode_buttons_labels(sf::Text* buttons_labels,sf::Font& font, unsigned int width, unsigned int height, unsigned int color){
 
-    int sclae = height*0.03f*4.0f;//Rozmiar czcionki
-    int n = 16;//Liczba wypisywanych cyfr
+    int sclae = height*0.03f*1.0f;//Rozmiar czcionki
+    int n = 13;//Liczba wypisywanych cyfr
 
     //Lista symboli
     sf::String symbols[8] = {        
@@ -290,7 +290,7 @@ void build_gamemode_buttons_labels(sf::Text* buttons_labels,sf::Font& font, unsi
         //Ustawia tekst, rozmiar i czcionkęs
         buttons_labels[i] = sf::Text(font,tmp,sclae);
         //Skaluje napisy
-        buttons_labels[i].setScale({0.25,0.25});
+        // buttons_labels[i].setScale({0.25,0.25});
         //Ustawia punkt odniesienia na środek napisu
         sf::FloatRect bounds = buttons_labels[i].getLocalBounds();//auto?
         buttons_labels[i].setOrigin({

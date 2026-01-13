@@ -277,6 +277,25 @@ int main()
 
 
             }
+            //Menu gry
+            else if(state==3||state==4){
+                //Animacja guzików
+                for(int i=0;i<8;i++){
+                    button_animation(gamemode_buttons[i],gamemode_buttons_labels[i],*window);
+                    if(button_action(gamemode_buttons[i],*event,*window)){
+                        gamemode = i;
+
+                        //Tu rozpocznie się gra!
+                        std::cout<<gamemode<<std::endl;
+
+                        //state = 5;
+
+                    }
+            
+                }
+
+
+            }
         }
 
         

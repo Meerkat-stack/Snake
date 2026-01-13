@@ -6,8 +6,16 @@
 #include "includes/loging_page.h"
 #include "includes/signup_page.h"
 
-
 #include <SFML/Graphics.hpp>
+#include <deque>
+#include <vector>
+#include <random>
+#include <string>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
+#include <algorithm> 
+
 
 #define Basil_color 0x1A471BFF //Że w sęsie ciemny zielony
 #define Piemontite_color  0x1A471BFF//0x964B67FF//Że w sęsie fioletowy      //Zamieniłem basil_color na ten bo różowy mi się przestął chyba podobać
@@ -18,7 +26,334 @@
 
 #define max_num_of_buttons 3
 
+// --- Konfiguracja gry ---
+const int TILE_SIZE = 25;
+const int WINDOW_WIDTH = 1000;
+const int UI_HEIGHT = 80;
+const int WINDOW_HEIGHT = 800 + UI_HEIGHT;
+
+const float BASE_SPEED = 0.1f;
+const float MAX_SPEED_CAP = 0.04f;
+const int APPLES_TO_MAX = 20;
+
+enum class Direction { Up, Down, Left, Right };
+
+
+
+struct SnakeGame {
+    sf::RenderWindow window;
+
+    std::deque<sf::Vector2i> snake;
+    sf::Vector2i food;
+    Direction dir;
+    bool isGameOver;
+    bool consolePrinted; // Flaga, żeby wypisać wynik w konsoli tylko raz
+
+    sf::Clock moveClock;
+    sf::Clock gameTimeClock;
+    float moveTimer;
+
+    int score;
+    int highScore;
+    float totalTime;
+
+    std::mt19937 rng;
+
+    // --- UI i Teksty ---
+    sf::Font font;
+    sf::Text scoreLabel, scoreValue;
+    sf::Text highLabel, highValue;
+    sf::Text timeLabel, timeValue;
+
+    SnakeGame()
+        : window(sf::VideoMode({ WINDOW_WIDTH, WINDOW_HEIGHT }), "Snake SFML 3.0.2 - Pointers"),
+        dir(Direction::Right),
+        isGameOver(false),
+        consolePrinted(false),
+        moveTimer(0),
+        score(0),
+        highScore(0),
+        totalTime(0),
+        rng(std::random_device{}()),
+        scoreLabel(font), scoreValue(font),
+        highLabel(font), highValue(font),
+        timeLabel(font), timeValue(font)
+    {
+        window.setFramerateLimit(60);
+
+        if (!font.openFromFile("font.ttf")) {
+            if (!font.openFromFile("C:\\Windows\\Fonts\\arial.ttf")) {}
+        }
+
+        loadHighScore();
+        setupHUD();
+        resetGame();
+    }
+
+    // --- 2. FUNKCJA ZWRACAJĄCA WSKAŹNIK ---
+    // Zwraca adres w pamięci (float*), pod którym znajduje się totalTime
+    float* getTimePointer() {
+        return &totalTime;
+    }
+
+    void setupHUD() {
+        unsigned int charSize = 30;
+        sf::Color labelColor = sf::Color(255, 215, 0);
+        sf::Color valueColor = sf::Color::White;
+        float uiY = 20.f;
+
+        scoreLabel.setString("SCORE:"); scoreLabel.setCharacterSize(charSize); scoreLabel.setFillColor(labelColor); scoreLabel.setPosition({ 40.f, uiY });
+        scoreValue.setCharacterSize(charSize); scoreValue.setFillColor(valueColor); scoreValue.setPosition({ 180.f, uiY });
+
+        highLabel.setString("HI-SCORE:"); highLabel.setCharacterSize(charSize); highLabel.setFillColor(labelColor); highLabel.setPosition({ 400.f, uiY });
+        highValue.setCharacterSize(charSize); highValue.setFillColor(valueColor); highValue.setPosition({ 600.f, uiY });
+
+        timeLabel.setString("TIME:"); timeLabel.setCharacterSize(charSize); timeLabel.setFillColor(labelColor); timeLabel.setPosition({ 800.f, uiY });
+        timeValue.setCharacterSize(charSize); timeValue.setFillColor(valueColor); timeValue.setPosition({ 900.f, uiY });
+    }
+
+    void loadHighScore() {
+        std::ifstream inputFile("highscore.txt");
+        if (inputFile.is_open()) { inputFile >> highScore; inputFile.close(); }
+        else { highScore = 0; }
+    }
+
+    void saveHighScore() {
+        std::ofstream outputFile("highscore.txt");
+        if (outputFile.is_open()) { outputFile << highScore; outputFile.close(); }
+    }
+
+    void resetGame() {
+        snake.clear();
+        snake.push_back({ 10, 10 });
+        snake.push_back({ 9, 10 });
+        snake.push_back({ 8, 10 });
+
+        dir = Direction::Right;
+        score = 0;
+        isGameOver = false;
+        consolePrinted = false; // Resetujemy flagę konsoli
+
+        spawnFood();
+        gameTimeClock.restart();
+        totalTime = 0;
+    }
+
+    void spawnFood() {
+        int cols = WINDOW_WIDTH / TILE_SIZE;
+        int rows = (WINDOW_HEIGHT - UI_HEIGHT) / TILE_SIZE;
+
+        std::uniform_int_distribution<int> distX(0, cols - 1);
+        std::uniform_int_distribution<int> distY(0, rows - 1);
+
+        bool validPosition = false;
+        while (!validPosition) {
+            food = { distX(rng), distY(rng) };
+            validPosition = true;
+            for (const auto& segment : snake) {
+                if (segment == food) { validPosition = false; break; }
+            }
+        }
+    }
+
+    void processInput() {
+        while (const auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+            }
+        }
+
+        if (!isGameOver) {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && dir != Direction::Down) dir = Direction::Up;
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && dir != Direction::Up) dir = Direction::Down;
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && dir != Direction::Right) dir = Direction::Left;
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && dir != Direction::Left) dir = Direction::Right;
+        }
+
+        if (isGameOver && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+            resetGame();
+        }
+    }
+
+    void update() {
+        // Jeśli gra się skończyła, sprawdź czy już wypisaliśmy info w konsoli
+        if (isGameOver) {
+            if (!consolePrinted) {
+                // --- 3. UŻYCIE WSKAŹNIKA I WYPISANIE W KONSOLI ---
+                float* ptr = getTimePointer(); // Pobieramy wskaźnik
+
+                std::cout << "--- KONIEC GRY ---" << std::endl;
+                std::cout << "Adres zmiennej czasu (w pamieci): " << ptr << std::endl;
+                std::cout << "Wartosc pod tym adresem (sekundy): " << *ptr << std::endl;
+                std::cout << "------------------" << std::endl;
+
+                consolePrinted = true; // Blokada, żeby nie wypisywać w kółko
+            }
+            return;
+        }
+
+        float dt = moveClock.restart().asSeconds();
+        moveTimer += dt;
+        totalTime = gameTimeClock.getElapsedTime().asSeconds();
+
+        // UI Update
+        scoreValue.setString(std::to_string(score));
+        highValue.setString(std::to_string(highScore));
+        int totalSeconds = static_cast<int>(totalTime);
+        std::ostringstream timeStream;
+        timeStream << std::setfill('0') << std::setw(2) << (totalSeconds / 60) << ":"
+            << std::setfill('0') << std::setw(2) << (totalSeconds % 60);
+        timeValue.setString(timeStream.str());
+
+        // Prędkość
+        float currentSpeed = BASE_SPEED;
+        float progress = std::min(static_cast<float>(score), static_cast<float>(APPLES_TO_MAX)) / static_cast<float>(APPLES_TO_MAX);
+        currentSpeed = BASE_SPEED - (progress * (BASE_SPEED - MAX_SPEED_CAP));
+
+        if (moveTimer >= currentSpeed) {
+            moveTimer = 0;
+
+            sf::Vector2i newHead = snake.front();
+            switch (dir) {
+            case Direction::Up:    newHead.y -= 1; break;
+            case Direction::Down:  newHead.y += 1; break;
+            case Direction::Left:  newHead.x -= 1; break;
+            case Direction::Right: newHead.x += 1; break;
+            }
+
+            int cols = WINDOW_WIDTH / TILE_SIZE;
+            int rows = (WINDOW_HEIGHT - UI_HEIGHT) / TILE_SIZE;
+
+            if (newHead.x < 0 || newHead.x >= cols || newHead.y < 0 || newHead.y >= rows) {
+                isGameOver = true;
+                if (score > highScore) { highScore = score; saveHighScore(); }
+                return;
+            }
+            for (const auto& segment : snake) {
+                if (segment == newHead) {
+                    isGameOver = true;
+                    if (score > highScore) { highScore = score; saveHighScore(); }
+                    return;
+                }
+            }
+
+            snake.push_front(newHead);
+
+            if (newHead == food) {
+                score++;
+                if (score > highScore) { highScore = score; saveHighScore(); }
+                spawnFood();
+            }
+            else {
+                snake.pop_back();
+            }
+        }
+    }
+
+    void render() {
+        window.clear(sf::Color(20, 20, 20));
+
+        int cols = WINDOW_WIDTH / TILE_SIZE;
+        int rows = (WINDOW_HEIGHT - UI_HEIGHT) / TILE_SIZE;
+        sf::RectangleShape bgRect(sf::Vector2f(static_cast<float>(TILE_SIZE), static_cast<float>(TILE_SIZE)));
+
+        for (int y = 0; y < rows; ++y) {
+            for (int x = 0; x < cols; ++x) {
+                bgRect.setPosition({
+                    static_cast<float>(x * TILE_SIZE),
+                    static_cast<float>(y * TILE_SIZE + UI_HEIGHT)
+                    });
+
+                if ((x + y) % 2 == 0)
+                    bgRect.setFillColor(sf::Color(18, 224, 37));
+                else
+                    bgRect.setFillColor(sf::Color(25, 191, 40));
+
+                window.draw(bgRect);
+            }
+        }
+
+        sf::RectangleShape gameRect(sf::Vector2f(static_cast<float>(TILE_SIZE), static_cast<float>(TILE_SIZE)));
+        gameRect.setSize({ static_cast<float>(TILE_SIZE - 1), static_cast<float>(TILE_SIZE - 1) });
+
+        for (size_t i = 0; i < snake.size(); ++i) {
+            gameRect.setPosition({
+                static_cast<float>(snake[i].x * TILE_SIZE),
+                static_cast<float>(snake[i].y * TILE_SIZE + UI_HEIGHT)
+                });
+            if (i == 0) gameRect.setFillColor(sf::Color(0, 97, 255));
+            else gameRect.setFillColor(sf::Color(0, 80, 220));
+            window.draw(gameRect);
+        }
+
+        gameRect.setPosition({
+            static_cast<float>(food.x * TILE_SIZE),
+            static_cast<float>(food.y * TILE_SIZE + UI_HEIGHT)
+            });
+        gameRect.setFillColor(sf::Color::Red);
+        window.draw(gameRect);
+
+        sf::RectangleShape uiBar(sf::Vector2f(static_cast<float>(WINDOW_WIDTH), static_cast<float>(UI_HEIGHT)));
+        uiBar.setFillColor(sf::Color(30, 30, 30));
+        uiBar.setOutlineThickness(-2);
+        uiBar.setOutlineColor(sf::Color(100, 100, 100));
+        uiBar.setPosition({ 0.f, 0.f });
+        window.draw(uiBar);
+
+        window.draw(scoreLabel); window.draw(scoreValue);
+        window.draw(highLabel); window.draw(highValue);
+        window.draw(timeLabel); window.draw(timeValue);
+
+        if (isGameOver) {
+            sf::RectangleShape overlay(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+            overlay.setFillColor(sf::Color(0, 0, 0, 150));
+            window.draw(overlay);
+
+            sf::Text overText(font);
+            overText.setString("GAME OVER");
+            overText.setCharacterSize(70);
+            overText.setFillColor(sf::Color::Red);
+
+            sf::FloatRect rect = overText.getLocalBounds();
+            overText.setOrigin({ rect.position.x + rect.size.x / 2.0f, rect.position.y + rect.size.y / 2.0f });
+            overText.setPosition({ WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f - 40.f });
+
+            sf::Text subText(font);
+            subText.setString("Press SPACE to Restart");
+            subText.setCharacterSize(30);
+            subText.setFillColor(sf::Color::White);
+
+            rect = subText.getLocalBounds();
+            subText.setOrigin({ rect.position.x + rect.size.x / 2.0f, rect.position.y + rect.size.y / 2.0f });
+            subText.setPosition({ WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f + 40.f });
+
+            window.draw(overText);
+            window.draw(subText);
+        }
+
+        window.display();
+    }
+
+    void run() {
+        while (window.isOpen()) {
+            processInput();
+            update();
+            render();
+        }
+    }
+};
+
+
+
+
+
 Player player;
+
+/* to do int main trzeba dać żeby odpalić gre
+SnakeGame game;
+game.run();
+*/
+
 
 int main()
 {

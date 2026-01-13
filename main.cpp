@@ -41,6 +41,10 @@ int main()
    -1 - błędne dane
    1 - zalogowany
    */
+   int gamemode = 0;//Zmienna odpowiedzialna za tryb gry (która stała)
+    /*
+    indeksy z tablicy od 0 do 7
+    */
    int active_field = -1;//Zmienna określająca które pole ma przyjmować tekst, tam ustawia kursor
    unsigned int frame_count=0;//Zlicza klatki, przyda się do kursora
 
@@ -148,6 +152,14 @@ int main()
     sf::Text statistic_player_text[9]{sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(font),sf::Text(math_font)};
     build_player_stat(statistic_player_text,font,math_font,width,height,Dark_color);
 
+    //Przyciski rozpoczynające grę
+    //Tablica przechowująca przyciski
+    sf::RectangleShape gamemode_buttons[8];
+    builda_gamemode_buttons(gamemode_buttons,width,height,Apatite_color,Dark_color);
+
+    //Tablica przechowująca etykiety do przycisków uruchamiających grę
+    sf::Text gamemode_buttons_labels[8]{sf::Text(math_font),sf::Text(math_font),sf::Text(math_font),sf::Text(math_font),sf::Text(math_font),sf::Text(math_font),sf::Text(math_font),sf::Text(math_font)};
+    build_gamemode_buttons_labels(gamemode_buttons_labels,math_font,width,height,Dark_color);
 
 
 
@@ -328,6 +340,12 @@ int main()
             }
             for(int i=0;i<9;i++){
                 window->draw(statistic_player_text[i]);
+            }
+            for(int i=0;i<8;i++){
+                window->draw(gamemode_buttons[i]);
+            }
+            for(int i=0;i<8;i++){
+                window->draw(gamemode_buttons_labels[i]);
             }
             break;
         }

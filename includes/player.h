@@ -29,6 +29,24 @@ void build_stat_bg(
     sf::RectangleShape* bg//Tablica przechowująca kształty wokoło statystyk
 );
 
+void builda_gamemode_buttons(
+    sf::RectangleShape* buttons,//tablica przechowująca przyciski do trybu gry
+    unsigned int width,//Szerokośc okna
+    unsigned int height,//Wysokość okna
+    unsigned int button_color,//Kolor przycisków
+    unsigned int border_color//Kolor obramówki
+);
+
+//Funkcja tworząca etykiety dla przycisków
+void build_gamemode_buttons_labels(
+    sf::Text* buttons_labels,//Tablica przechowująca etykiety napisów
+    sf::Font& font,//Czcionka, matematyczna
+    unsigned int width,//Szerokość okna
+    unsigned int height,//Wysokość  okna
+    unsigned int color//Kolor etykiet
+);
+
+
 
 
 #endif

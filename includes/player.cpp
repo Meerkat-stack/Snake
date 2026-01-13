@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include "seciurity.h"
+#include "button.h"
+#include "math_const.h"
 
 // Struktura gracza
 struct Player {
@@ -138,9 +140,9 @@ void build_player_stat(sf::Text* statistic, sf::Font& font, sf::Font& math_font,
     //Ustawia kolor wszyskic na jednakowy, ustawia punkt odniesienia na lewo i ewentualnie grubośc krawędzi, pozycje
     for(int i=0;i<9;i++){
         if(i==8){
-            statistic[i] = sf::Text(math_font,labels[i],size);
+            statistic[i] = sf::Text(math_font,labels[i],size*4);
             statistic[i].setStyle(sf::Text::Bold);//Pogrubia symbole
-            statistic[i].setCharacterSize(4*size);//Ustawia większą czcionkę
+            // statistic[i].setCharacterSize(4*size);//Ustawia większą czcionkę
             statistic[i].setScale({0.25f,0.25f});//Skaluje symbole
             // statistic[i].setOutlineThickness(0.25);
             // statistic[i].setOutlineColor(sf::Color(color));
@@ -171,6 +173,8 @@ void build_player_stat(sf::Text* statistic, sf::Font& font, sf::Font& math_font,
 
 //Funkcja aktualizująca statystyki za pomoca sf::setString("");
 void update_player_stat(sf::Text* statistic){
+
+    int size = (int)(1.5*(0.5f*0.037f*740+3));//Polepszyć jakość tak jak przy innych rozmiarach
     
     statistic[0].setString("Player:\t" + player.name);
     statistic[1].setString("Total play time: " + std::to_string(player.total_play_time_sec) + " s");
@@ -195,6 +199,9 @@ void update_player_stat(sf::Text* statistic){
     for(int i = 0; i < 9; i++) {
         sf::FloatRect bounds = statistic[i].getLocalBounds();
         statistic[i].setOrigin({bounds.position.x, 0.f}); // Tylko jeśli chcesz wyrównanie do lewej po zmianie tekstu
+        statistic[i].setCharacterSize(4*size);//Ustawia większą czcionkę
+        statistic[i].setScale({0.25f,0.25f});//Skaluje symbole
+
     }
 
 }
@@ -205,7 +212,7 @@ void build_stat_bg(sf::RectangleShape* bg,unsigned int width, unsigned int heigh
     statistic_bg.setPosition({width/2.0f,height/4.0f*1.04f});
     statistic_bg.setFillColor(sf::Color(bg_color));
     statistic_bg.setOutlineColor(sf::Color(front_color));
-    statistic_bg.setOutlineThickness(2);
+    statistic_bg.setOutlineThickness(4);
 
     bg[0] = statistic_bg;
 
@@ -221,5 +228,88 @@ void build_stat_bg(sf::RectangleShape* bg,unsigned int width, unsigned int heigh
     bg[1].setPosition({width/2.0f,height/4.0f*(1.45f+0.55f)/2.0f});
     bg[2].setPosition({width/2.0f,height/4.0f*1.45f});
     bg[3].setPosition({width/2.0f,height/4.0f*0.55f});
+
+}
+
+void builda_gamemode_buttons(sf::RectangleShape* buttons,unsigned int width, unsigned int height, unsigned int button_color, unsigned int border_color){
+    for(int i=0;i<4;i++){
+        buttons[i] = build_button(
+            width*0.85f/2.2f, height*0.05f,//Wymiary pojedynczego przycisku
+            width/3.73f, height/1.85f + i*height*0.1,//Pozycja kolejnych przycisków
+            button_color,border_color
+        );
+        buttons[i].setOutlineThickness(4);
+    }
+
+    for(int i=4;i<8;i++){
+        buttons[i] = build_button(
+            width*0.85f/2.2f, height*0.05f,//Wymiary pojedynczego przycisku
+            3.0f*width/4.098f, height/1.85f + (i-4)*height*0.1,//Pozycja kolejnych przycisków
+            button_color,border_color
+        );
+        buttons[i].setOutlineThickness(4);
+    }
+}
+
+//Funkcja tworząca etykiety dla przycisków
+void build_gamemode_buttons_labels(sf::Text* buttons_labels,sf::Font& font, unsigned int width, unsigned int height, unsigned int color){
+
+    int sclae = height*0.03f*4.0f;//Rozmiar czcionki
+    int n = 16;//Liczba wypisywanych cyfr
+
+    //Lista symboli
+    sf::String symbols[8] = {        
+        PI_CONST.symbol,
+        E_CONST.symbol,
+        GAMMA_CONST.symbol,
+        ZETA_CONST.symbol,
+        PHI_CONST.symbol,
+        SQRT2_CONST.symbol,
+        SQRT3_CONST.symbol,
+        SQRT5_CONST.symbol
+};
+    //Lista cyfr
+    sf::String digits[8] = {
+        PI_CONST.digits.substr(0,n),
+        E_CONST.digits.substr(0,n),
+        GAMMA_CONST.digits.substr(0,n),
+        ZETA_CONST.digits.substr(0,n),
+        PHI_CONST.digits.substr(0,n),
+        SQRT2_CONST.digits.substr(0,n),
+        SQRT3_CONST.digits.substr(0,n),
+        SQRT5_CONST.digits.substr(0,n)
+    };
+    
+    for(int i=0;i<8;i++){
+        //Buduje napis
+        sf::String tmp = symbols[i];
+        tmp += L" \u2248 ";
+        tmp += digits[i];
+        tmp += L"...";
+
+        //Ustawia tekst, rozmiar i czcionkęs
+        buttons_labels[i] = sf::Text(font,tmp,sclae);
+        //Skaluje napisy
+        buttons_labels[i].setScale({0.25,0.25});
+        //Ustawia punkt odniesienia na środek napisu
+        sf::FloatRect bounds = buttons_labels[i].getLocalBounds();//auto?
+        buttons_labels[i].setOrigin({
+            bounds.position.x + bounds.size.x / 2.0f, // Odpowiednik left + width/2
+            bounds.position.y + bounds.size.y / 2.0f  // Odpowiednik top + height/2
+        });
+
+        //Ustawia kolor etykiet
+        buttons_labels[i].setFillColor(sf::Color(color));
+        buttons_labels[i].setStyle(sf::Text::Bold);
+
+        //Ustala pozycje
+        if(i<4){
+            buttons_labels[i].setPosition({width/3.73f, height/1.85f + i*height*0.1f});
+        }
+        else if(i>=4){
+            buttons_labels[i].setPosition({3.0f*width/4.098f, height/1.85f + (i-4)*height*0.1f});
+        }
+    }
+
 
 }

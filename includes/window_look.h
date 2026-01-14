@@ -7,6 +7,8 @@
 sf::RectangleShape build_border(
     unsigned int width,//Szerokość okna 
     unsigned int height,//Wyskokość okna
+    float x,//Pozycja x-owa
+    float y,//Poycja y-owa
     unsigned int color//Kolor ramki
 );
 

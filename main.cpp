@@ -37,10 +37,15 @@ int main() {
         }
 
         // Sterowanie (Enums w SFML 3.0 są silniej typowane)
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && direction.y != 1)  direction = {0, -1};
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && direction.y != -1) direction = {0, 1};
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && direction.x != 1)  direction = {-1, 0};
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && direction.x != -1) direction = {1, 0};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W ) && direction.y != 1)  direction = {0, -1};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S ) && direction.y != -1) direction = {0, 1};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A ) && direction.x != 1)  direction = {-1, 0};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D ) && direction.x != -1) direction = {1, 0};        
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up ) && direction.y != 1)  direction = {0, -1};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down ) && direction.y != -1) direction = {0, 1};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left ) && direction.x != 1)  direction = {-1, 0};
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right ) && direction.x != -1) direction = {1, 0};
+
 
         // --- LOGIKA ---
         Position newHead = {snake.front().x + direction.x, snake.front().y + direction.y};

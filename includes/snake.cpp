@@ -22,7 +22,7 @@ const int WINDOW_HEIGHT = 740;//800 + UI_HEIGHT;
 
 const float BASE_SPEED = 0.13f;//Prędkość, większa wartość-wolniejszy wąż
 const float MAX_SPEED_CAP = 0.04f;
-const int APPLES_TO_MAX = 75;//Maksymalna ilość zjedzonych objektó, definiuje jak szybko waż będzie przyspieszał
+int APPLES_TO_MAX = 150;//Maksymalna ilość zjedzonych objektó, definiuje jak szybko waż będzie przyspieszał
 
 enum class Direction { Up, Down, Left, Right };
 
@@ -32,10 +32,16 @@ struct SnakeGame {
     //Piotr
     constant currentConstant; // Przechowuje aktualną stałą
 
+    int currentMode;
+
     // Funkcja do ustawienia stałej 
-    void setGameConstant(const constant& c) 
+    void setGameConstant(const constant& c,int& gamemode) 
     {
     currentConstant = c;
+    currentMode = gamemode; // <--- Tutaj ją "zapamiętujesz"
+        
+        // Możesz też od razu ustawić trudność, o którą pytałeś wcześniej
+        APPLES_TO_MAX = 150 - (currentMode * 15);
     }
 
 
@@ -59,6 +65,7 @@ struct SnakeGame {
 
     // --- UI i Teksty ---
     sf::Font font;
+    sf::Font math_font;
     sf::Text scoreLabel, scoreValue;
     sf::Text highLabel, highValue;
     sf::Text timeLabel, timeValue;
@@ -80,6 +87,13 @@ struct SnakeGame {
         // window.setFramerateLimit(60);
 
         if (!font.openFromFile("fonts/BebasNeue-Regular.ttf")) {
+            // Jeśli ta nie zadziała, spróbuj systemowego ariala jako plan awaryjny
+            if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
+                std::cout << "NIE ZNALEZIONO ZADNEJ CZCIONKI DLA SNAKE!" << std::endl;
+            }
+        }
+
+        if (!math_font.openFromFile("fonts/arial/arial.ttf")) {
             // Jeśli ta nie zadziała, spróbuj systemowego ariala jako plan awaryjny
             if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
                 std::cout << "NIE ZNALEZIONO ZADNEJ CZCIONKI DLA SNAKE!" << std::endl;
@@ -178,6 +192,16 @@ struct SnakeGame {
     }
 
     void update() {
+        //Odblokowuje poziomy
+        if(player.unlocked_maps_count==1&&player.total_play_time_sec>30.0f)player.unlocked_maps_count++;
+        if(player.unlocked_maps_count==2&&player.total_play_time_sec>90.0f)player.unlocked_maps_count++;
+        if(player.unlocked_maps_count==3&&player.total_play_time_sec>210.0f)player.unlocked_maps_count++;
+        if(player.unlocked_maps_count==4&&player.total_play_time_sec>420.0f)player.unlocked_maps_count++;
+        if(player.unlocked_maps_count==5&&player.total_play_time_sec>720.0f)player.unlocked_maps_count++;
+        if(player.unlocked_maps_count==6&&player.total_play_time_sec>1200.0f)player.unlocked_maps_count++;
+        if(player.unlocked_maps_count==7&&player.total_play_time_sec>1800.0f)player.unlocked_maps_count++;
+
+        
         // Jeśli gra się skończyła, sprawdź czy już wypisaliśmy info w konsoli
         if (isGameOver) {
             if (!consolePrinted) {
@@ -193,8 +217,9 @@ struct SnakeGame {
                 player.total_play_time_sec += static_cast<int>(totalTime);
                 
                 //Sprawdza czy wąż osiągnął rekordową długość
-                if (snake.size() > player.snake_max_length) {
-                    player.snake_max_length = snake.size();
+                if ((snake.size()-3 )> player.snake_max_length) {
+                    player.snake_max_length = snake.size()-3;
+                    std::cout<<snake.size()-3;//Debug
                 }
 
                 consolePrinted = true; // Blokada, żeby nie wypisywać w kółko
@@ -276,16 +301,22 @@ void render() {
 
         for (int y = 0; y < rows; ++y) {
             for (int x = 0; x < cols; ++x) {
-                // SFML 3.0: Wymagane nawiasy klamrowe {} (Vector2f)
+
                 bgRect.setPosition({
                     static_cast<float>(x * TILE_SIZE),
                     static_cast<float>(y * TILE_SIZE + UI_HEIGHT + GAP)
                     });
 
-                if ((x + y) % 2 == 0)
+                if ((x + y) % 2 == 0){
                     bgRect.setFillColor(sf::Color(Basil_color));
-                else
-                    bgRect.setFillColor(sf::Color(Olive_color));
+                    bgRect.setOutlineThickness(2);
+                    bgRect.setOutlineColor(sf::Color(Olive_color));
+                }
+                else{
+                    bgRect.setFillColor(sf::Color(Basil_color));
+                    bgRect.setOutlineThickness(2);
+                    bgRect.setOutlineColor(sf::Color(Dark_color));
+                }
 
                 window->draw(bgRect);
             }
@@ -294,30 +325,29 @@ void render() {
         sf::RectangleShape gameRect(sf::Vector2f(static_cast<float>(TILE_SIZE), static_cast<float>(TILE_SIZE)));
         gameRect.setSize({ static_cast<float>(TILE_SIZE - 1), static_cast<float>(TILE_SIZE - 1) });
 
-        // SFML 3.0: Naprawa błędu "no matching function for call to sf::Text::Text()"
-        // Musimy przekazać 'font' w konstruktorze
-        sf::Text snakeText(font); 
-        snakeText.setFillColor(sf::Color::White);
+
+        sf::Text snakeText(math_font); 
+        snakeText.setFillColor(sf::Color(Dark_color));
         snakeText.setCharacterSize(TILE_SIZE - 10);
 
         for (size_t i = 0; i < snake.size(); ++i) {
-            // SFML 3.0: Pozycja jako wektor {}
+
             gameRect.setPosition({
                 static_cast<float>(snake[i].x * TILE_SIZE),
                 static_cast<float>(snake[i].y * TILE_SIZE + UI_HEIGHT + GAP)
                 });
 
-            if (i == 0) gameRect.setFillColor(sf::Color(0, 97, 255));
-            else gameRect.setFillColor(sf::Color(0, 80, 220));
+            if (i == 0){ gameRect.setFillColor(sf::Color(Olive_color));gameRect.setOutlineColor(sf::Color(Dark_color));gameRect.setOutlineThickness(2);}//Tło snake
+            else {gameRect.setFillColor(sf::Color(Olive_color));gameRect.setOutlineColor(sf::Color(Dark_color));gameRect.setOutlineThickness(2);}//Tło snake
             window->draw(gameRect);
 
-            // --- Logika wyświetlania znaków ---
+            //Wyświetla znai
             sf::String textDisplay = "";
             if (i == 0) {
                 textDisplay = currentConstant.symbol;
             }
             else if (i == 1) {
-                textDisplay = "=";
+                textDisplay = (L"\u2248");
             }
             else {
                 size_t digitIndex = i - 2; 
@@ -328,7 +358,6 @@ void render() {
 
             snakeText.setString(textDisplay);
             
-            // SFML 3.0: Naprawa błędów 'left', 'width' itd.
             // left -> position.x
             // top -> position.y
             // width -> size.x
@@ -353,7 +382,7 @@ void render() {
             static_cast<float>(food.x * TILE_SIZE),
             static_cast<float>(food.y * TILE_SIZE + UI_HEIGHT+GAP)
             });
-        gameRect.setFillColor(sf::Color::Red);
+        gameRect.setFillColor(sf::Color(Red_color));
         window->draw(gameRect);
 
         // Opcjonalnie: Wyświetl cyfrę na jedzeniu (tę, która będzie następna)

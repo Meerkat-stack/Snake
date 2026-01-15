@@ -48,6 +48,8 @@ int main()
     //Torzy okno
     sf::RenderWindow * window = new sf::RenderWindow(sf::VideoMode({width,height}),"Irrationa Snake");
 
+    // window->setKeyRepeatEnabled(false);
+
     SnakeGame snakeGame(window); //Tworzy węża i całą grę
 
     window->setFramerateLimit(60);//Ustawia klatkarz
@@ -180,10 +182,11 @@ int main()
 
             //Sprawdza klawisze z klawiatury
             else if(const auto* keyPress = event->getIf<sf::Event::KeyPressed>()){
+
                 //Ustawia klawisz esc jako wyjście
                 if(keyPress->scancode == sf::Keyboard::Scancode::Escape){
                     if(state==5) {update_player_stat(statistic_player_text); state = 4;snakeGame.resetGame();}
-                    else window->close();
+                    // else window->close();
                 }
                 //Klawisz TAB
                 if (keyPress->code == sf::Keyboard::Key::Tab) {
@@ -281,15 +284,17 @@ int main()
                 for(int i=0;i<8;i++){
                     button_animation(gamemode_buttons[i],gamemode_buttons_labels[i],*window);
                     if(button_action(gamemode_buttons[i],*event,*window)){
-                        gamemode = i;
+                        if(i<player.unlocked_maps_count){
+                            gamemode = i;
 
-                        snakeGame.setGameConstant(*ALL_CONSTANTS[gamemode]);
-                        
-                        //Tu rozpocznie się gra!
-                        std::cout<<gamemode<<std::endl;
+                            snakeGame.setGameConstant(*ALL_CONSTANTS[gamemode],gamemode);
+                            
+                            //Tu rozpocznie się gra!
+                            std::cout<<gamemode<<std::endl;
 
-                        state = 5;
-                        snakeGame.resetGame();
+                            state = 5;
+                            snakeGame.resetGame();
+                        }
                     }
             
                 }

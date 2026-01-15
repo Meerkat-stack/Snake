@@ -48,9 +48,16 @@ int main()
     //Torzy okno
     sf::RenderWindow * window = new sf::RenderWindow(sf::VideoMode({width,height}),"Irrationa Snake");
 
-    // window->setKeyRepeatEnabled(false);
-
     SnakeGame snakeGame(window); //Tworzy węża i całą grę
+
+    //Ustawia ikonę
+    sf::Image icon;
+    if (icon.loadFromFile("icon/icon1.png")) { 
+        // std::cout<<"Loaded";
+        window->setIcon(icon); 
+    }
+
+    // window->setKeyRepeatEnabled(false);
 
     window->setFramerateLimit(60);//Ustawia klatkarz
 

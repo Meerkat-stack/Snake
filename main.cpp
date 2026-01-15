@@ -282,7 +282,10 @@ int main()
             else if(state==3||state==4){
                 //Animacja guzików
                 for(int i=0;i<8;i++){
-                    button_animation(gamemode_buttons[i],gamemode_buttons_labels[i],*window);
+                    {
+                    if(i<player.unlocked_maps_count) button_animation(gamemode_buttons[i],gamemode_buttons_labels[i],*window);
+                    // else button_shake_animation(gamemode_buttons[i],gamemode_buttons_labels[i],frame_count);
+                    }
                     if(button_action(gamemode_buttons[i],*event,*window)){
                         if(i<player.unlocked_maps_count){
                             gamemode = i;

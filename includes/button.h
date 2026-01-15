@@ -38,6 +38,13 @@ inline void button_animation(
     sf::RenderWindow &window//oko w którym akcja się rozgrywa
 );
 
+// inline void button_shake_animation(
+//     sf::RectangleShape &button, 
+//     sf::Text &text,
+//     int frames
+// );
+
+
 inline void build_start_bttons(
     unsigned int width,//Szerokość ekranu
     unsigned int height,//Wysokość ekranu

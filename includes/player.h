@@ -46,6 +46,10 @@ void build_gamemode_buttons_labels(
     unsigned int color//Kolor etykiet
 );
 
+//Aktualizuje exp
+void update_exp();
+
+
 
 
 

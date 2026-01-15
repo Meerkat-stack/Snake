@@ -105,7 +105,6 @@ struct SnakeGame {
         resetGame();
     }
 
-    // --- 2. FUNKCJA ZWRACAJĄCA WSKAŹNIK ---
     // Zwraca adres w pamięci (float*), pod którym znajduje się totalTime
     float* getTimePointer() {
         return &totalTime;
@@ -129,13 +128,13 @@ struct SnakeGame {
     }
 
     void loadHighScore() {
-        std::ifstream inputFile("highscore.txt");
+        std::ifstream inputFile("userdata/highscore.txt");
         if (inputFile.is_open()) { inputFile >> highScore; inputFile.close(); }
         else { highScore = 0; }
     }
 
     void saveHighScore() {
-        std::ofstream outputFile("highscore.txt");
+        std::ofstream outputFile("userdata/highscore.txt");
         if (outputFile.is_open()) { outputFile << highScore; outputFile.close(); }
     }
 
@@ -180,10 +179,10 @@ struct SnakeGame {
         }
 
         if (!isGameOver) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && dir != Direction::Down) dir = Direction::Up;
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) && dir != Direction::Up) dir = Direction::Down;
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && dir != Direction::Right) dir = Direction::Left;
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && dir != Direction::Left) dir = Direction::Right;
+            if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))&& dir != Direction::Down) dir = Direction::Up;
+            else if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))&& dir != Direction::Up) dir = Direction::Down;
+            else if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))&& dir != Direction::Right) dir = Direction::Left;
+            else if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))&& dir != Direction::Left) dir = Direction::Right;
         }
 
         if (isGameOver && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
@@ -367,8 +366,7 @@ void render() {
                 textRect.position.x + textRect.size.x / 2.0f, 
                 textRect.position.y + textRect.size.y / 2.0f
             });
-
-            // SFML 3.0: setPosition z wektorem {}
+            //Pozycja snake
             snakeText.setPosition({
                 gameRect.getPosition().x + TILE_SIZE/2.0f,
                 gameRect.getPosition().y + TILE_SIZE/2.0f
@@ -385,7 +383,7 @@ void render() {
         gameRect.setFillColor(sf::Color(Red_color));
         window->draw(gameRect);
 
-        // Opcjonalnie: Wyświetl cyfrę na jedzeniu (tę, która będzie następna)
+        //Wyświetl cyfrę na jedzeniu (tę, która będzie następna)
         size_t nextDigitIndex = snake.size() - 2;
         if (nextDigitIndex >= 0 && nextDigitIndex < currentConstant.digits.length()) {
              snakeText.setString(sf::String(currentConstant.digits[nextDigitIndex]));
@@ -402,7 +400,7 @@ void render() {
              window->draw(snakeText);
         }
 
-        // UI Tło
+        //UI Tło
         sf::RectangleShape uiBar(sf::Vector2f(static_cast<float>(WINDOW_WIDTH), static_cast<float>(UI_HEIGHT*1.55)));
         uiBar.setFillColor(sf::Color(Apatite_color));
         uiBar.setOutlineThickness(-4);
@@ -410,9 +408,8 @@ void render() {
         uiBar.setPosition({ 0.f, 0.f });
         window->draw(uiBar);
 
-        // Podziałki UI
+        //Podziałki UI
         sf::RectangleShape bar0({4.0f,static_cast<float>(UI_HEIGHT*1.55)});
-        // Uwaga: getGeometricCenter w SFML 3 zwraca Vector2f, więc setOrigin powinno to przyjąć
         bar0.setOrigin(bar0.getGeometricCenter()); 
         bar0.setFillColor(sf::Color(Dark_color));
         bar0.setPosition({WINDOW_WIDTH*0.3f,20.0f*2.2f});

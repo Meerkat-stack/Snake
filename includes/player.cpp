@@ -113,16 +113,30 @@ void read_player() {
     file.close();
 }
 
+
+//Exp to stare player.min_lenght że nie ma minimalnej dlugości już
+//Aktualizuje dane do exp
+void update_exp(){
+    player.snake_min_length = 
+        player.snake_max_length*1000 +
+        player.total_pixels_traveled/1000 +
+        player.total_play_time_sec/6 -
+        (player.deaths_self+player.deaths_wall)*5;
+
+}
+
+
 //Funkcja budująca wizualizację statystyk
 void build_player_stat(sf::Text* statistic, sf::Font& font, sf::Font& math_font,float width, float height, unsigned int color){
     int size = (int)(1.5*(0.5f*0.037f*height+3));//Polepszyć jakość tak jak przy innych rozmiarach
+    update_exp();
     
     std::string labels[9];
     labels[0] = "Player:\t" + player.name;
-    labels[1] = "Total play time: " + std::to_string(player.total_play_time_sec) + " s";
+    labels[1] = "Total play time: " + std::to_string(player.total_play_time_sec/60) + " min";
     labels[2] = "Distance traveled: " + std::to_string((int)player.total_pixels_traveled) + " px";
     labels[3] = "Max snake length: " + std::to_string(player.snake_max_length);
-    labels[4] = "Min snake length: " + std::to_string(player.snake_min_length);
+    labels[4] = "Exp: " + std::to_string(player.snake_min_length);
     labels[5] = "Deaths by wall: " + std::to_string(player.deaths_wall);
     labels[6] = "Deaths by tail: " + std::to_string(player.deaths_self);
     labels[7] = "Unlocked maps:\t";
@@ -175,12 +189,14 @@ void build_player_stat(sf::Text* statistic, sf::Font& font, sf::Font& math_font,
 void update_player_stat(sf::Text* statistic){
 
     int size = (int)(1.5*(0.5f*0.037f*740+3));//Polepszyć jakość tak jak przy innych rozmiarach
+
+    update_exp();
     
     statistic[0].setString("Player:\t" + player.name);
-    statistic[1].setString("Total play time: " + std::to_string(player.total_play_time_sec) + " s");
+    statistic[1].setString("Total play time: " + std::to_string(player.total_play_time_sec/60) + " min");
     statistic[2].setString("Distance traveled: " + std::to_string((int)player.total_pixels_traveled) + " px");
     statistic[3].setString("Max snake length: " + std::to_string(player.snake_max_length));
-    statistic[4].setString("Min snake length: " + std::to_string(player.snake_min_length));
+    statistic[4].setString("Exp: " + std::to_string(player.snake_min_length));
     statistic[5].setString("Deaths by wall: " + std::to_string(player.deaths_wall));
     statistic[6].setString("Deaths by tail: " + std::to_string(player.deaths_self));
     statistic[7].setString("Unlocked maps:");

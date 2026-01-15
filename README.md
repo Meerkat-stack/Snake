@@ -18,7 +18,7 @@ Gra zręcznościowo-edukacyjna będąca wariacją klasycznego "Snake'a". Celem g
 * Pobierz instalator
 
 ## 🎮 Sterowanie
-* **Strzałki:** Poruszanie wężem
+* **Strzałki/WSAD:** Poruszanie wężem
 * **Enter:** Zatwierdzanie (w menu)
 * **Tab:** Przełączanie pól (logowanie)
 * **ESC:** Wyjście do menu / Pauza

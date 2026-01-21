@@ -114,7 +114,7 @@ void read_player() {
 }
 
 
-//Exp to stare player.min_lenght że nie ma minimalnej dlugości już
+//Exp to stare player.min_lenght, bo nie ma minimalnej dlugości już
 //Aktualizuje dane do exp
 void update_exp(){
     player.snake_min_length = 
@@ -147,9 +147,6 @@ void build_player_stat(sf::Text* statistic, sf::Font& font, sf::Font& math_font,
         labels[8] += math_symbols[i];
         labels[8] += " ";
     }
-
-// Jeśli chcesz użyć 9. pozycji dla skinów, musiałbyś zwiększyć tablicę do [9]
-// labels[8] = "Unlocked skins: " + std::to_string(player.unlocked_skins_count);
 
     //Ustawia kolor wszyskic na jednakowy, ustawia punkt odniesienia na lewo i ewentualnie grubośc krawędzi, pozycje
     for(int i=0;i<9;i++){

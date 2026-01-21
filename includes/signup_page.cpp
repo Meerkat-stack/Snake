@@ -19,7 +19,7 @@ int add_user(std::string username, std::string password) {
     // zwraca 0 gdy użytkownik o takim loginie już istnieje
     // zwraca -1 gdy nie można otworzyć/zapisać pliku
 
-    // 1. NAJPIERW SPRAWDZAMY CZY LOGIN JEST WOLNY
+    // 1.Sprawdza czy login jest zajęty
     std::ifstream file_in("userdata/users_log.txt");
     if (file_in.is_open()) {
         std::string u, p;
@@ -32,7 +32,7 @@ int add_user(std::string username, std::string password) {
         file_in.close();
     }
 
-    // 2. DOPISUJEMY NOWEGO UŻYTKOWNIKA
+    //Dopisuje nowego użytkownika
     // std::ios::app sprawia, że nie kasujemy pliku, tylko dopisujemy na końcu
     std::ofstream file_out("userdata/users_log.txt", std::ios::app);//Dane logowania
     std::ofstream file_player("userdata/users_data.txt",std::ios::app);//Statystyki gracza z gry
@@ -42,7 +42,7 @@ int add_user(std::string username, std::string password) {
         return -1;
     }
 
-    // Zapisujemy: login [spacja] hasło [nowa linia]
+    // Zapisuje do pliku login [spacja] hasło [nowa linia]
     file_out << username << " " << password << "\n";
     
     file_player << username << " 0 0 0 0 0 0 1 1\n";
@@ -53,13 +53,13 @@ int add_user(std::string username, std::string password) {
 }
 
 void sign_up(int& state, int& error_log, std::string& login_input, std::string& password_input, std::string& hide_password_input, sf::Text& login_input_text, sf::Text& password_input_text, int& active_field) {
-    // Wywołujemy funkcję dopisującą do pliku
+    // Wywołujem funkcję dopisującą do pliku
     int signup_status = add_user(login_input, password_input);
     
     // Debug
     // std::cout << "Rejestracja: " << login_input << " | Status: " << signup_status << std::endl;
 
-    // Czyścimy pola tekstowe (tak jak w logowaniu)
+    // Czyści pola tekstowe
     login_input = "";
     password_input = "";
     hide_password_input = "";
@@ -68,20 +68,20 @@ void sign_up(int& state, int& error_log, std::string& login_input, std::string& 
 
     switch (signup_status) {
         case -1:
-            state = 0; // Błąd pliku - wracamy do startu
-            error_log = -2; // Możesz przypisać -2 jako błąd systemowy
+            state = 0; //Błąd pliku - wracamy do startu
+            error_log = -2; //Możesz przypisać -2 jako błąd systemowy
             break;
         case 0:
-            // Użytkownik już istnieje
-            state = 2; // Zostajemy na stronie rejestracji
-            error_log = -2; // Kod błędu dla "Username taken"
+            //Użytkownik już istnieje
+            state = 2; //Zostaje na stronie rejestracji
+            error_log = -2; //Kod błędu dla "Username taken"
             // std::cout << "Login zajety\n";
             break;
         case 1:
-            // Sukces! Przenosimy użytkownika do logowania, żeby się sprawdził
+            //Sukces! Przenosimy użytkownika do logowania, żeby się sprawdził
             state = 1; 
             active_field = 0;
-            error_log = 2; // Kod dla "Account created, please log in"
+            error_log = 2; //Kod dla zajętej nazwy
             // std::cout << "Zarejestrowano pomyślnie\n";
             break;
     }

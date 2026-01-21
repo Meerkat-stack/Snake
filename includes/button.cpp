@@ -63,17 +63,6 @@ inline void button_animation(sf::RectangleShape &button, sf::Text &text, sf::Ren
     }
 }
 
-// //Animacja dla zablokowanych guzików
-// inline void button_shake_animation(sf::RectangleShape &button, sf::Text &text, int frames)
-// {
-//     float amplitude = 4.0f; 
-//     float speed = 0.5f;
-//     float xOffset = std::sin(frames * speed) * amplitude;
-
-//     button.move({xOffset, 0.0f});
-//     text.move({xOffset, 0.0f});
-// }
-
 
 //Tworzy przysciski na starcie
 inline void build_start_bttons(unsigned int width, unsigned int height, unsigned int button_color, unsigned int text_color,sf::RectangleShape* buttons,sf::Text* buttons_labels, sf::Font& font){

@@ -1,42 +1,16 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-
-// //Funkcja szyfrująca
-// void encrypt(std::string& text,int n){
-//     std::string tmp_text="";
-//     int i=0;
-//     while(text[i]!='\0'){
-//         tmp_text += (char)(text[i]+n);
-//         i++;
-//     }
-//     text = tmp_text;
-// }
-
-
-// //Funkcja deszyfrująca
-// void decrypt(std::string& text, int n){
-//     std::string tmp_text="";
-//     int i=0;
-//     while(text[i]!='\0'){
-//         tmp_text += (char)(text[i]-n);
-//         i++;
-//     }
-//     text = tmp_text;
-
-// }
-
-
-// Funkcja szyfrująca - używamy referencji, by zmieniać oryginał
+//Funkcja szyfrująca, używa referencji, by zmieniać oryginał
 void encrypt(std::string& text, int n) {
-    for (char& c : text) {
+    for (char& c : text) {//To samo co for (int i = 0; i < text.size(); i++)
         c = c + n; // Przesunięcie o n pozycji w tabeli ASCII
     }
 }
 
-// Funkcja deszyfrująca
+//Funkcja deszyfrująca
 void decrypt(std::string& text, int n) {
-    for (char& c : text) {
+    for (char& c : text) {//To samo co for (int i = 0; i < text.size(); i++)
         c = c - n;
     }
 }

@@ -38,9 +38,8 @@ struct SnakeGame {
     void setGameConstant(const constant& c,int& gamemode) 
     {
     currentConstant = c;
-    currentMode = gamemode; // <--- Tutaj ją "zapamiętujesz"
+    currentMode = gamemode;
         
-        // Możesz też od razu ustawić trudność, o którą pytałeś wcześniej
         APPLES_TO_MAX = 150 - (currentMode * 15);
     }
 
@@ -51,7 +50,7 @@ struct SnakeGame {
     sf::Vector2i food;
     Direction dir;
     bool isGameOver;
-    bool consolePrinted; // Flaga, żeby wypisać wynik w konsoli tylko raz
+    bool consolePrinted; //Flaga, żeby wypisać wynik w konsoli tylko raz //Debug
 
     sf::Clock moveClock;
     sf::Clock gameTimeClock;
@@ -87,14 +86,12 @@ struct SnakeGame {
         // window.setFramerateLimit(60);
 
         if (!font.openFromFile("fonts/BebasNeue-Regular.ttf")) {
-            // Jeśli ta nie zadziała, spróbuj systemowego ariala jako plan awaryjny
             if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
                 std::cout << "NIE ZNALEZIONO ZADNEJ CZCIONKI DLA SNAKE!" << std::endl;
             }
         }
 
         if (!math_font.openFromFile("fonts/arial/arial.ttf")) {
-            // Jeśli ta nie zadziała, spróbuj systemowego ariala jako plan awaryjny
             if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
                 std::cout << "NIE ZNALEZIONO ZADNEJ CZCIONKI DLA SNAKE!" << std::endl;
             }
@@ -105,7 +102,7 @@ struct SnakeGame {
         resetGame();
     }
 
-    // Zwraca adres w pamięci (float*), pod którym znajduje się totalTime
+    //Zwraca adres w pamięci (float*), pod którym znajduje się totalTime
     float* getTimePointer() {
         return &totalTime;
     }
@@ -147,7 +144,7 @@ struct SnakeGame {
         dir = Direction::Right;
         score = 0;
         isGameOver = false;
-        consolePrinted = false; // Resetujemy flagę konsoli
+        consolePrinted = false; //Resetuje flagę konsoli
 
         spawnFood();
         gameTimeClock.restart();
@@ -201,7 +198,7 @@ struct SnakeGame {
         if(player.unlocked_maps_count==7&&player.total_play_time_sec>1800.0f)player.unlocked_maps_count++;
 
         
-        // Jeśli gra się skończyła, sprawdź czy już wypisaliśmy info w konsoli
+        //Jeśli gra się skończyła, sprawdza czy już wypisano info w konsoli
         if (isGameOver) {
             if (!consolePrinted) {
                 //Wypisuje wskaźnik
@@ -340,7 +337,7 @@ void render() {
             else {gameRect.setFillColor(sf::Color(Olive_color));gameRect.setOutlineColor(sf::Color(Dark_color));gameRect.setOutlineThickness(2);}//Tło snake
             window->draw(gameRect);
 
-            //Wyświetla znai
+            //Wyświetla znaki
             sf::String textDisplay = "";
             if (i == 0) {
                 textDisplay = currentConstant.symbol;
@@ -422,12 +419,12 @@ void render() {
         window->draw(bar0);
         window->draw(bar1);
 
-        // Teksty UI
+        //Teksty UI
         window->draw(scoreLabel); window->draw(scoreValue);
         window->draw(highLabel); window->draw(highValue);
         window->draw(timeLabel); window->draw(timeValue);
 
-        // Ekran Game Over
+        //Ekran Game Over
         if (isGameOver) {
             sf::RectangleShape overlay(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
             overlay.setFillColor(sf::Color(0, 0, 0, 75));
@@ -446,7 +443,6 @@ void render() {
             overText.setCharacterSize(70);
             overText.setFillColor(sf::Color(Red_color));
 
-            // Poprawka Rect dla SFML 3.0
             sf::FloatRect rect = overText.getLocalBounds();
             overText.setOrigin({ 
                 rect.position.x + rect.size.x / 2.0f, 

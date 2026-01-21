@@ -46,7 +46,7 @@ int main()
 
 
     //Torzy okno
-    sf::RenderWindow * window = new sf::RenderWindow(sf::VideoMode({width,height}),"Irrationa Snake");
+    sf::RenderWindow * window = new sf::RenderWindow(sf::VideoMode({width,height}),"Irrationa Snake",sf::Style::Titlebar | sf::Style::Close);//sf::Style::None usuwa pasek okna, typu krzyżyk itd.
 
     SnakeGame snakeGame(window); //Tworzy węża i całą grę
 
@@ -178,11 +178,11 @@ int main()
         else frame_count++;
         }
 
-        //Czyta zdażenia, takie jak przyciski,ruchy myszką itd., otem wykonuje odpowiednie akcje
+        //Czyta zdażenia, takie jak przyciski,ruchy myszką itd., potem wykonuje odpowiednie akcje
         //Pętla zdażeń
         while (const std::optional<sf::Event> event = window->pollEvent()){
 
-            //Jak wcisnąć krzyżyk to sie zamyka
+            //Jak wcisnąć krzyżyk to się zamyka
             if(event->is<sf::Event::Closed>()){
                 window->close();//Bez tego krzyżyk nie działa
             }
@@ -199,7 +199,7 @@ int main()
                 if (keyPress->code == sf::Keyboard::Key::Tab) {
                     if(state==1||state==2){
                         if(active_field==0){
-                            // Przełącza poa do pisania
+                            // Przełącza pola do pisania
                             active_field = 1;
                             // Resetuje frame_count, żeby kursor od razu się pojawił w nowym polu
                             frame_count = 0; 
@@ -317,7 +317,7 @@ int main()
         
 
         //Renderowanie
-        window->clear(sf::Color(Basil_color));//Kolor okna, nie rozumiem do końca systemu zapisu kolorów
+        window->clear(sf::Color(Basil_color));//Kolor okna
 
         switch (state){
         case 0://Start buttons
@@ -383,11 +383,11 @@ int main()
             }
             break;
         case 5:
-            snakeGame.playStep(); // Wywołujemy jeden krok logiki i rysowania węża
+            snakeGame.playStep(); //Wywołuje jeden krok logiki i rysowania węża
         
-            // Jeśli chcesz wrócić do menu po przegranej:
+            //Esc wraca do menu
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-                state = 4; // Wróć do menu wyboru trybu
+                state = 4; //Zmienia strone na menu gry
             }
             break;
         
